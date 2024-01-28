@@ -153,20 +153,38 @@ char **__get_frame_names(char *path, int *file_count){
     return NULL;
 }
 
+int get_file_count(char* path){
+    DIR *d;
+    struct dirent *dir;
+    d = opendir(path);
+    int file_count = 0;
+
+    if (d) {
+
+        while ((dir = readdir(d)) != NULL) {
+            const char *ext = strrchr (dir->d_name, '.');
+            if (dir->d_type == DT_REG && (!strcmp (ext+1, "png"))){
+                (file_count)++;
+            }
+        }
+        closedir(d);
+    }
+    return file_count;
+}
 
 void print_folder(char *path, int characters, int color){
-    int file_count = 0;
-    char **file_names = __get_frame_names(path, &file_count);
+    //int file_count = 0;
+    int file_count = get_file_count(path);
 
     Frame *prev_frame = NULL;
     Frame *curr_frame = NULL;
 
     system("clear");
     puts(HIDE_CURSOR);
-    for (int i = 0; i < file_count; i++) {
+    for (int i = 1; i < file_count; i++) {
 
         char file_path[100]; // change to dynamic
-        sprintf(file_path, "%s/%s",path,file_names[i]);
+        sprintf(file_path, "%s/%d.png",path,i);
 
         if(curr_frame != NULL){
             if(prev_frame != NULL){
@@ -178,6 +196,7 @@ void print_folder(char *path, int characters, int color){
         curr_frame = new_frame(file_path);
 
         if(prev_frame != NULL){
+            /* puts(file_path); */
             draw_frame(prev_frame,curr_frame,characters,color);
         }
         else{
@@ -185,13 +204,10 @@ void print_folder(char *path, int characters, int color){
         }
         msleep(33);
 
-        free(file_names[i]); // Free memory for each file name
     }
     free_frame(curr_frame);
     free_frame(prev_frame);
     puts(SHOW_CURSOR);
-
-    free(file_names); // Free the array itself
 }
 
 void print_image(char *path, int characters, int color){
