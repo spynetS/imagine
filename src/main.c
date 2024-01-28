@@ -20,15 +20,15 @@ void draw_frame(Frame *prev_frame, Frame *new_frame){
     int y = 0;
 
     for(int i = 0; i < new_frame->width*new_frame->height*new_frame->comp; i +=new_frame->comp){
-        if(new_frame->pixel_data[i] != prev_frame->pixel_data[i]){
-            char str[50];
-            char color_str[28] = "";
-            //sprintf(color,"\x1b[38;5;%dm",data[i]);
-            sprintf(color_str,"\033[38;2;%d;%d;%dm",new_frame->pixel_data[i],new_frame->pixel_data[i+1],new_frame->pixel_data[i+2]);
-            sprintf(str,"%s██"RESET, color_str);
-            /* sprintf(str,"%s%c "RESET,color_str,mychars[(new_frame->pixel_data[i]*(strlen(mychars)-1)/255)]); */
-            setCharAt(x+offsetX,y+offsetY,str);
-        }
+            if(new_frame->pixel_data[i] != prev_frame->pixel_data[i]){
+                char str[50];
+                char color_str[28] = "";
+                //sprintf(color,"\x1b[38;5;%dm",data[i]);
+                sprintf(color_str,"\033[38;2;%d;%d;%dm",new_frame->pixel_data[i],new_frame->pixel_data[i+1],new_frame->pixel_data[i+2]);
+                sprintf(str,"%s██"RESET, color_str);
+                /* sprintf(str,"%s%c "RESET,color_str,mychars[(new_frame->pixel_data[i]*(strlen(mychars)-1)/255)]); */
+                setCharAt(x+offsetX,y+offsetY,str);
+            }
         x += 2;
         if(x == new_frame->width*2){
             x = 0;
