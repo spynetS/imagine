@@ -8,7 +8,7 @@ typedef struct frame{
 } Frame;
 
 
-Frame *newFrame(char *path);
+Frame *new_frame(char *path);
 
 void free_frame(Frame* frame);
 
@@ -30,6 +30,10 @@ int getBrightness(int red, int green, int blue);
   *      2 background color
   * */
 int load_frame(Frame *frame, int option, int color);
+
+void print_image(char *path, int characters, int color);
+
+void print_folder(char *path, int characters, int color);
 
 
 #endif // IMAGINE_H_

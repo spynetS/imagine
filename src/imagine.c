@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "printer.h"
 #include "imagine.h"
+#include <dirent.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -15,7 +16,7 @@
 */
 
 
-Frame *newFrame(char *path){
+Frame *new_frame(char *path){
     Frame *new_frame  = malloc(sizeof(Frame));
     new_frame->width  = 0;
     new_frame->height = 0;
@@ -82,7 +83,6 @@ void print_frame(Frame* frame, int characters, int color){
     int count = 0;
     char *mychars = " .isk@";
     for(int i = 0; i < frame->width*frame->height*frame->comp; i +=frame->comp){
-        char str[50];
         char color_str[28] = "";
         switch(color){
             case 1:
@@ -104,78 +104,85 @@ void print_frame(Frame* frame, int characters, int color){
         }
     }
 }
-/* void draw_frame(Frame* prev_frame, Frame *new_frame){ */
-/*     if(prev_frame == NULL){ */
-/*         print_frame(new_frame); */
-/*         return; */
-/*     } */
-/*     if(new_frame == NULL){ */
-/*         print_frame(prev_frame); */
-/*         return; */
-/*     } */
-/*     int i = 0; */
-/*     int offsetX = 0; */
-/*     int offsetY = 0; */
 
-/*     for(int y = 0; y < new_frame->height;y++){ */
-/*         for(int x = 0; x < new_frame->width*2;x+=2){ */
-/*             if(strcmp(new_frame->frame[i], prev_frame->frame[i]) ){ */
-/*                 setCharAt(x+offsetX,y+offsetY,new_frame->frame[i]); */
-/*             } */
-/*             i++; */
-/*         } */
-/*     } */
-/* } */
+int __compare(const void *a, const void *b) {
+    return strcmp(*(const char **)a, *(const char **)b);
+}
 
-/* void print_frame(Frame* frame){ */
-/*     int count = 0; */
-/*     printf("FIRST FRAME %d", frame->comp); */
-/*     for(int i = 0; i < frame->strings; i ++){ */
-/*         printf("%s",frame->frame[i]); */
-/*         count ++; */
-/*         if(count == frame->width){ */
-/*             count = 0; */
-/*             printf("\n"); */
-/*         } */
-/*     } */
-/* } */
+char **__get_frame_names(char *path, int *file_count){
+    DIR *d;
+    struct dirent *dir;
+    d = opendir(path);
 
-/* int draw_frame(Frame *frame, int option, int color){ */
-/*     char *mychars_detail = " `.-':_,^=;><+!rc*\/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@"; */
-/*     char *mychars = " .isk@"; */
-/*     int width = frame->width; */
-/*     int height = frame->height; */
-/*     int comp = frame->comp; */
-/*     unsigned char * data = frame->pixel_data; */
+    if (d) {
+        // Collect file names in a dynamic array
+        char **file_names = NULL;
+        (*file_count) = 0;
 
-/*         for (size_t i = 0; i < (width*height)*comp; i+=comp) { */
+        while ((dir = readdir(d)) != NULL) {
+            if (dir->d_type == DT_REG){
+                printf("%d\n",(*file_count));
+                file_names = realloc(file_names, ((*file_count) + 1) * sizeof(char *));
+                file_names[*file_count] = strdup(dir->d_name);
+                (*file_count)++;
+            }
+        }
 
-/*             char *pixel = malloc(sizeof(char)*50); */
-/*             char color_str[28] = ""; */
-/*             //sprintf(color,"\x1b[38;5;%dm",data[i]); */
-/*             switch(color){ */
-/*                 case 1: */
-/*                     sprintf(color_str,"\033[38;2;%d;%d;%dm",data[i],data[i+1],data[i+2]); */
-/*                     break; */
-/*                 case 2: */
-/*                     sprintf(color_str,"\033[48;2;%d;%d;%dm",data[i],data[i+1],data[i+2]); */
-/*                     break; */
-/*             } */
+        // Sort the array of file names
+        qsort(file_names, (*file_count), sizeof(char *), __compare);
 
-/*             switch(option){ */
-/*                 case 0: */
-/*                     sprintf(pixel,"%s%c "RESET,color_str,mychars[(data[i]*(strlen(mychars)-1)/255)]); */
-/*                     break; */
-/*                 case 1: */
-/*                     sprintf(pixel,"%s%c "RESET,color_str,mychars_detail[(data[i]*(strlen(mychars)-1)/255)]); */
-/*                     break; */
-/*                 case 2: */
-/*                     sprintf(pixel,"%s██"RESET,color_str); */
-/*                     break; */
-/*             } */
+        // Print the sorted file names
+        closedir(d);
 
-/*             frame->frame[frame->strings] = pixel; */
-/*             frame->strings++; */
-/*         } */
-/*     return 1; */
-/* } */
+        return file_names;
+    }
+    return NULL;
+}
+
+
+void print_folder(char *path, int characters, int color){
+    int file_count = 0;
+    char **file_names = __get_frame_names(path, &file_count);
+
+    Frame *prev_frame = NULL;
+    Frame *curr_frame = NULL;
+
+    system("clear");
+    puts(HIDE_CURSOR);
+    for (int i = 0; i < file_count; i++) {
+
+        char file_path[100]; // change to dynamic
+        sprintf(file_path, "%s/%s",path,file_names[i]);
+
+        if(curr_frame != NULL){
+            if(prev_frame != NULL){
+                free_frame(prev_frame);
+            }
+            prev_frame = curr_frame;
+        }
+
+        curr_frame = new_frame(file_path);
+
+        if(prev_frame != NULL){
+            draw_frame(prev_frame,curr_frame,characters,color);
+        }
+        else{
+            print_frame(curr_frame,characters,color);
+        }
+        msleep(33);
+
+        free(file_names[i]); // Free memory for each file name
+    }
+    free_frame(curr_frame);
+    free_frame(prev_frame);
+    puts(SHOW_CURSOR);
+
+    free(file_names); // Free the array itself
+}
+
+void print_image(char *path, int characters, int color){
+    puts(path);
+    Frame *frame = new_frame(path);
+    print_frame(frame,  characters, color);
+    free_frame(frame);
+}

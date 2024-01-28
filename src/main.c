@@ -3,51 +3,27 @@
 #include "imagine.h"
 #include "printer.h"
 #include "string.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
+int isDirectory(const char *path) {
+    struct stat path_stat;
+    stat(path, &path_stat);
 
+    // Check if the path corresponds to a directory
+    return S_ISDIR(path_stat.st_mode);
+}
 
 int main(int argv, char **argc) {
 
     char *path = argc[1];
-    Frame *prev_frame = NULL;
-    Frame *new_frame = NULL;
-    system("clear");
-
-    puts(HIDE_CURSOR);
-
-    for(int i = 2; i < 10; i +=1){
-        char str[25];
-        if(i > 999)
-            sprintf(str,"./%s/%d.png",path,i);
-        else if(i > 99)
-            sprintf(str,"./%s/%d.png",path,i);
-        else if(i > 9)
-            sprintf(str,"./%s/0%d.png",path,i);
-        else
-            sprintf(str,"./%s/00%d.png",path,i);
-
-        if(new_frame != NULL){
-            if(prev_frame != NULL){
-                free_frame(prev_frame);
-            }
-            prev_frame = new_frame;
-        }
-
-        new_frame = newFrame(str);
-
-        if(prev_frame != NULL){
-            draw_frame(prev_frame,new_frame,2,1);
-        }
-        else{
-            print_frame(new_frame,2,1);
-        }
-        msleep(0);
-        /* system("clear"); */
+    if (isDirectory(path)) {
+        print_folder(path,2,1);
     }
-    free_frame(new_frame);
-    free_frame(prev_frame);
+    else{
+        print_image(path, 0,0);
+    }
 
-    puts(SHOW_CURSOR);
-    printf("\\n\n\n\n\n\n\n\n\n\nn");
     return 0;
 }
