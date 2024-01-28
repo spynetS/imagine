@@ -15,10 +15,6 @@
 */
 
 
-const size_t NUM_PIXELS_TO_PRINT = 1000U;
-
-void print_frame(Frame* frame);
-
 Frame *newFrame(char *path){
     Frame *new_frame  = malloc(sizeof(Frame));
     new_frame->width  = 0;
@@ -37,6 +33,77 @@ void free_frame(Frame* frame){
     free(frame);
 }
 
+void draw_frame(Frame *prev_frame, Frame *new_frame, int characters, int color){
+
+    if(prev_frame == NULL){
+        print_frame(new_frame,2,1);
+        return;
+    }
+
+    int offsetX = 0;
+    int offsetY = 0;
+    char *mychars = " .isk@";
+
+    int x = 0;
+    int y = 0;
+
+    for(int i = 0; i < new_frame->width*new_frame->height*new_frame->comp; i +=new_frame->comp){
+            if(new_frame->pixel_data[i] != prev_frame->pixel_data[i] ||
+                new_frame->pixel_data[i+1] != prev_frame->pixel_data[i+1] ||
+                new_frame->pixel_data[i+2] != prev_frame->pixel_data[i+2]){
+
+                char str[50];
+                char color_str[28] = "";
+                switch(color){
+                    case 1:
+                        sprintf(color_str,"\033[38;2;%d;%d;%dm",new_frame->pixel_data[i],new_frame->pixel_data[i+1],new_frame->pixel_data[i+2]);
+                        break;
+
+                }
+                switch(characters){
+                    case 0:
+                        sprintf(str,"%s%c "RESET,color_str,mychars[(new_frame->pixel_data[i]*(strlen(mychars)-1)/255)]);
+                        break;
+                    case 2:
+                        sprintf(str,"%s██"RESET, color_str);
+                        break;
+                }
+                setCharAt(x+offsetX,y+offsetY,str);
+            }
+        x += 2;
+        if(x == new_frame->width*2){
+            x = 0;
+            y++;
+        }
+    }
+}
+
+void print_frame(Frame* frame, int characters, int color){
+    int count = 0;
+    char *mychars = " .isk@";
+    for(int i = 0; i < frame->width*frame->height*frame->comp; i +=frame->comp){
+        char str[50];
+        char color_str[28] = "";
+        switch(color){
+            case 1:
+                sprintf(color_str,"\033[38;2;%d;%d;%dm",frame->pixel_data[i],frame->pixel_data[i+1],frame->pixel_data[i+2]);
+                break;
+        }
+        switch(characters){
+            case 0:
+                printf("%s%c "RESET,color_str,mychars[(frame->pixel_data[i]*(strlen(mychars)-1)/255)]);
+                break;
+            case 2:
+                printf("%s██"RESET, color_str);
+                break;
+        }
+        count ++;
+        if(count == frame->width){
+            count = 0;
+            printf("\n");
+        }
+    }
+}
 /* void draw_frame(Frame* prev_frame, Frame *new_frame){ */
 /*     if(prev_frame == NULL){ */
 /*         print_frame(new_frame); */

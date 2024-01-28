@@ -8,15 +8,13 @@ typedef struct frame{
 } Frame;
 
 
-void print_frame(Frame* frame);
-
 Frame *newFrame(char *path);
 
 void free_frame(Frame* frame);
 
-void draw_frame(Frame* prev_frame, Frame *new_frame);
+void draw_frame(Frame* prev_frame, Frame *new_frame, int character, int color);
 
-void print_frame(Frame* frame);
+void print_frame(Frame* frame, int characters, int color);
 
 int getBrightness(int red, int green, int blue);
 
