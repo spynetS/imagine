@@ -16,7 +16,7 @@ int isDirectory(const char *path) {
     return S_ISDIR(path_stat.st_mode);
 }
 
-int character = 0;
+int character = 1;
 int color = 1;
 
 void setOption(int av,char **ac){

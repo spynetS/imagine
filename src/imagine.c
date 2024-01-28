@@ -6,6 +6,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+#define MAX(a,b) ((a) > (b) ? (a) : (b))
+#define MIN(a,b) ((a) < (b) ? (a) : (b))
+
 /*
 **         #TODO
 **  - scale image
@@ -14,6 +17,8 @@
 **  - play video without self extracting frames
 **  - music
 */
+
+
 
 
 Frame *new_frame(char *path){
@@ -35,7 +40,8 @@ void free_frame(Frame* frame){
 }
 
 int brightness(int red, int green, int blue){
-    return (red+green+blue)/3;
+    //0.299 r + 0.587 g + 0.114 b
+    return (0.299*red+green*0.587+blue*0.114);
 }
 
 void draw_frame(Frame *prev_frame, Frame *new_frame, int characters, int color){
@@ -60,20 +66,25 @@ void draw_frame(Frame *prev_frame, Frame *new_frame, int characters, int color){
                 new_frame->pixel_data[i+1] != prev_frame->pixel_data[i+1] ||
                 new_frame->pixel_data[i+2] != prev_frame->pixel_data[i+2]){
 
+                int contrast = 0;
+
                 char str[50];
                 char color_str[28] = "";
                 switch(color){
                     case 1:
-                        sprintf(color_str,"\033[38;2;%d;%d;%dm",new_frame->pixel_data[i],new_frame->pixel_data[i+1],new_frame->pixel_data[i+2]);
+                        sprintf(color_str,"\033[38;2;%d;%d;%dm",MIN(new_frame->pixel_data[i]+contrast,255),MIN(new_frame->pixel_data[i+1]+contrast,255),MIN(new_frame->pixel_data[i+2]+contrast,255));
+                        break;
+                    case 2:
+                        sprintf(color_str,"\033[48;2;%d;%d;%dm",MIN(new_frame->pixel_data[i]+contrast,255),MIN(new_frame->pixel_data[i+1]+contrast,255),MIN(new_frame->pixel_data[i+2]+contrast,255));
                         break;
 
                 }
                 switch(characters){
                     case 0:
-                        sprintf(str,"%s%c ",color_str,mychars[(new_frame->pixel_data[i]*(strlen(mychars)-1)/255)]);
+                        sprintf(str,"%s%c ",color_str,mychars[(brightness(new_frame->pixel_data[i],new_frame->pixel_data[i+1],new_frame->pixel_data[i+2])*(strlen(mychars)-1)/255)]);
                         break;
                     case 1:
-                        printf("%s%c ",color_str,mychars_detailed[(new_frame->pixel_data[i]*(strlen(mychars)-1)/255)]);
+                        sprintf(str,"%s%c ",color_str,mychars_detailed[(brightness(new_frame->pixel_data[i],new_frame->pixel_data[i+1],new_frame->pixel_data[i+2])*(strlen(mychars_detailed)-1)/255)]);
                         break;
                     case 2:
                         sprintf(str,"%s██", color_str);
