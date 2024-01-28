@@ -28,7 +28,6 @@ Frame *newFrame(char *path){
     new_frame->pixel_data = data;
     new_frame->strings = 0;
 
-    printf("%d \n", new_frame->width);
 
     new_frame->frame = malloc(sizeof(char*)*(new_frame->width*new_frame->height)+1);
 
@@ -51,16 +50,12 @@ void draw_frame(Frame* prev_frame, Frame *new_frame){
 
     int count = 0;
     for(int i = 0; i < new_frame->strings; i ++){
-        /* printf("%s",prev_frame->frame[i]); */
-        /* msleep(0.5); */
         if(strcmp(new_frame->frame[i], prev_frame->frame[i]) != 0){
             int x = i % new_frame->width;
             int y = i / new_frame->width;
-            /* printf("%dx%d\n",x,y); */
             setCharAt(x, y, new_frame->frame[i]);
+            /* msleep(0.2); */
         }
-        /* if(i % new_frame->width == 0) */
-        /*     puts(""); */
     }
     /* printf("changed %d pixels of %d\n",count, new_frame->strings); */
 }
@@ -114,8 +109,11 @@ int main() {
     char *path = "oppenheimer";
     Frame *prev_frame = NULL;
     Frame *new_frame = NULL;
+    system("clear");
 
-    for(int i = 1; i < 500; i +=1){
+    puts(HIDE_CURSOR);
+
+    for(int i = 1; i < 1500; i +=1){
         char str[25];
         if(i > 999)
             sprintf(str,"./%s/%d.png",path,i);
@@ -138,14 +136,14 @@ int main() {
         if(prev_frame != NULL)
             draw_frame(prev_frame,new_frame);
         else
-            puts("NULL");
+            print_frame(new_frame);
 
-        printf("\nframe %s\n", str);
         msleep(33);
         //system("clear");
     }
     free_frame(new_frame);
     free_frame(prev_frame);
 
+    puts(SHOW_CURSOR);
     return 0;
 }
