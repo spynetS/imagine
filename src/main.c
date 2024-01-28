@@ -15,7 +15,7 @@ int main(int argv, char **argc) {
 
     puts(HIDE_CURSOR);
 
-    for(int i = 28; i < 500; i +=1){
+    for(int i = 2; i < 10; i +=1){
         char str[25];
         if(i > 999)
             sprintf(str,"./%s/%d.png",path,i);
@@ -48,5 +48,6 @@ int main(int argv, char **argc) {
     free_frame(prev_frame);
 
     puts(SHOW_CURSOR);
+    printf("\\n\n\n\n\n\n\n\n\n\nn");
     return 0;
 }
