@@ -17,7 +17,7 @@ int isDirectory(const char *path) {
 }
 
 int character = 0;
-int color = 0;
+int color = 1;
 
 void setOption(int av,char **ac){
     character = atoi(ac[1]);

@@ -34,6 +34,10 @@ void free_frame(Frame* frame){
     free(frame);
 }
 
+int brightness(int red, int green, int blue){
+    return (red+green+blue)/3;
+}
+
 void draw_frame(Frame *prev_frame, Frame *new_frame, int characters, int color){
 
     if(prev_frame == NULL){
@@ -101,10 +105,10 @@ void print_frame(Frame* frame, int characters, int color){
         }
         switch(characters){
             case 0:
-                printf("%s%c ",color_str,mychars[(frame->pixel_data[i]*(strlen(mychars)-1)/255)]);
+                printf("%s%c ",color_str,mychars[(brightness(frame->pixel_data[i],frame->pixel_data[i+1],frame->pixel_data[i+2])*(strlen(mychars)-1)/255)]);
                 break;
             case 1:
-                printf("%s%c ",color_str,mychars_detailed[(frame->pixel_data[i]*(strlen(mychars)-1)/255)]);
+                printf("%s%c ",color_str,mychars_detailed[(brightness(frame->pixel_data[i],frame->pixel_data[i+1],frame->pixel_data[i+2])*(strlen(mychars_detailed)-1)/255)]);
                 break;
             case 2:
                 printf("%s██", color_str);
