@@ -41,7 +41,7 @@ int main(int argv, char **argc) {
         else{
             print_frame(new_frame,2,1);
         }
-        msleep(42);
+        msleep(0);
         /* system("clear"); */
     }
     free_frame(new_frame);
