@@ -12,7 +12,7 @@ int main(int argv, char **argc) {
 
     puts(HIDE_CURSOR);
 
-    for(int i = 100; i < 3500; i +=1){
+    for(int i = 1; i < 200; i +=1){
         char str[25];
         if(i > 999)
             sprintf(str,"./%s/%d.png",path,i);
