@@ -57,22 +57,22 @@ void draw_frame(Frame* prev_frame, Frame *new_frame){
     int offsetX = 0;
     int offsetY = 0;
 
-    for(int i = 0; i < new_frame->width*new_frame->height; i ++){
-        int x = i % new_frame->width;
-        int y = i / new_frame->width;
-        if(strcmp(new_frame->frame[i], prev_frame->frame[i]) != 0){
-            setCharAt(x+offsetX,y+offsetY,new_frame->frame[i]);
-        }
-    }
-
-    /* for(int y = 0; y < new_frame->height;y++){ */
-    /*     for(int x = 0; x < new_frame->width;x+=2){ */
-    /*         if(strcmp(new_frame->frame[i], prev_frame->frame[i]) != 0){ */
-    /*             setCharAt(x+offsetX,y+offsetY,new_frame->frame[i]); */
-    /*         } */
-    /*         i++; */
+    /* for(int i = 0; i < new_frame->width*new_frame->height*2; i+=2){ */
+    /*     int x = i % new_frame->width; */
+    /*     int y = i / new_frame->width; */
+    /*     if(strcmp(new_frame->frame[i], prev_frame->frame[i]) != 0){ */
+    /*         setCharAt(x+offsetX,y+offsetY,new_frame->frame[i]); */
     /*     } */
     /* } */
+
+    for(int y = 0; y < new_frame->height;y++){
+        for(int x = 0; x < new_frame->width*2;x+=2){
+            if(strcmp(new_frame->frame[i], prev_frame->frame[i]) != 0){
+                setCharAt(x+offsetX,y+offsetY,new_frame->frame[i]);
+            }
+            i++;
+        }
+    }
 }
 
 void print_frame(Frame* frame){
@@ -97,23 +97,40 @@ int getBrightness(int red, int green, int blue){
     return (int)(red +green + blue);
 }
 
-int load_frame(Frame *frame, int size){
-    char *mychars = " `.-':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@";
-    /* char *mychars = " .isk@"; */
+int load_frame(Frame *frame, int option, int color){
+    char *mychars_detail = " `.-':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@";
+    char *mychars = " .isk@";
     int width = frame->width;
     int height = frame->height;
     int comp = frame->comp;
     unsigned char * data = frame->pixel_data;
 
     int count = 0;
-        for (size_t i = 0; i < (width*height)*comp; i+=comp*size) {
+        for (size_t i = 0; i < (width*height)*comp; i+=comp) {
 
             char *pixel = malloc(sizeof(char)*50);
-            char color[28];
+            char color_str[28] = "";
             //sprintf(color,"\x1b[38;5;%dm",data[i]);
-            sprintf(color,"\033[38;2;%d;%d;%dm",data[i],data[i+1],data[i+2]);
-            /* sprintf(pixel,"%s%c "RESET,"",mychars[(data[i]*(strlen(mychars)-1)/255)]); */
-            sprintf(pixel,"%s█"RESET,color);
+            switch(color){
+                case 1:
+                    sprintf(color_str,"\033[38;2;%d;%d;%dm",data[i],data[i+1],data[i+2]);
+                    break;
+                case 2:
+                    sprintf(color_str,"\033[48;2;%d;%d;%dm",data[i],data[i+1],data[i+2]);
+                    break;
+            }
+
+            switch(option){
+                case 0:
+                    sprintf(pixel,"%s%c "RESET,color_str,mychars[(data[i]*(strlen(mychars)-1)/255)]);
+                    break;
+                case 1:
+                    sprintf(pixel,"%s%c "RESET,color_str,mychars_detail[(data[i]*(strlen(mychars)-1)/255)]);
+                    break;
+                case 2:
+                    sprintf(pixel,"%s██"RESET,color_str);
+                    break;
+            }
 
             frame->frame[frame->strings] = pixel;
             frame->strings++;

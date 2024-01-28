@@ -5,7 +5,7 @@
 
 int main() {
 
-    char *path = "anime";
+    char *path = "oppenheimer_sd";
     Frame *prev_frame = NULL;
     Frame *new_frame = NULL;
     system("clear");
@@ -31,7 +31,7 @@ int main() {
         }
 
         new_frame = newFrame(str);
-        load_frame(new_frame,1);
+        load_frame(new_frame,0,2);
 
         if(prev_frame != NULL)
             draw_frame(prev_frame,new_frame);
