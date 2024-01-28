@@ -26,6 +26,7 @@ Frame *newFrame(char *path){
     new_frame->comp   = 0;
 
     unsigned char *data = stbi_load(path, &(new_frame->width), &(new_frame->height), &(new_frame->comp), 0);
+
     new_frame->pixel_data = data;
     new_frame->strings = 0;
 
@@ -88,15 +89,6 @@ void print_frame(Frame* frame){
     }
 }
 
-int getBrightness(int red, int green, int blue){
-    //0.2126*R + 0.7152*G + 0.0722*B
-    if(red < 0) red = 0;
-    if(green < 0) green = 0;
-    if(blue < 0) blue = 0;
-    /* return (int)(0.299 * red + 0.587 * green + 0.114 * blue); */
-    return (int)(red +green + blue);
-}
-
 int load_frame(Frame *frame, int option, int color){
     char *mychars_detail = " `.-':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@";
     char *mychars = " .isk@";
@@ -105,7 +97,6 @@ int load_frame(Frame *frame, int option, int color){
     int comp = frame->comp;
     unsigned char * data = frame->pixel_data;
 
-    int count = 0;
         for (size_t i = 0; i < (width*height)*comp; i+=comp) {
 
             char *pixel = malloc(sizeof(char)*50);

@@ -13,8 +13,7 @@ all: $(files)
 	$(cc) -o main main.c $(files)
 
 img:
-	$(cc) -o main single.c $(files)
-	./main
+	$(cc) -o main single.c $(files) flagcer.c
 
 run: all
 	./main
