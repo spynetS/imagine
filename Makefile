@@ -5,12 +5,16 @@
 # @version 0.1
 
 
-cc = gcc -Wall
+cc = gcc -Wall -lm -lprinter
 
-files = main.c -lm -lprinter
+files = imagine.c
 
 all: $(files)
-	$(cc) -o main $(files)
+	$(cc) -o main main.c $(files)
+
+img:
+	$(cc) -o main single.c $(files)
+	./main
 
 run: all
 	./main
