@@ -1,36 +1,35 @@
-#include <stdio.h>
-#include "printer.h"
+//#include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
-#define BG_BLACK  "\x1b[40m"
-#define BG_RED    "\x1b[41m"
-#define BG_GREEN  "\x1b[42m"
-#define BG_YELLOW "\x1b[43m"
-#define BG_BLUE   "\x1b[44m"
-#define BG_PURPLE "\x1b[45m"
-#define BG_CYAN   "\x1b[46m"
-#define BG_WHITE  "\x1b[47m"
-
-
-#define BLACK  "\x1b[30m"
-#define RED    "\x1b[31m"
-#define GREEN  "\x1b[32m"
-#define YELLOW "\x1b[33m"
-#define BLUE   "\x1b[34m"
-#define PURPLE "\x1b[35m"
-#define CYAN   "\x1b[36m"
-#define WHITE  "\x1b[37m"
-#define BG     "██"
-
-#define RESET "\x1b[0m"
-#define BG_RESET "\x1b[10m"
-
-#define HIDE_CURSOR "\033[?25l"
-#define SHOW_CURSOR "\033[?25h"
+#include "printer.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 const size_t NUM_PIXELS_TO_PRINT = 1000U;
+
+void free_frame(char **frame,int size){
+    printf("size %d\n",size);
+    if(frame!=NULL){
+        for(int i = 0;i <= size; i ++){
+            if(frame[i] != NULL){
+                free(frame[i]);
+            }
+        }
+        free(frame);
+    }
+}
+
+void print_frame(char ** frame, int w,int h){
+    if(frame != NULL){
+        for(int i = 0;i < w*h; i ++){
+            if(i % w==0)
+                printf("\n");
+            printf("%s",frame[i]);
+        }
+    }
+}
+
 
 int getBrightness(int red, int green, int blue){
     //0.2126*R + 0.7152*G + 0.0722*B
@@ -41,52 +40,54 @@ int getBrightness(int red, int green, int blue){
     return (int)(red +green + blue);
 }
 
-int drawImage(char *path, int size){
+char** getImage(char *path, int size, int* width, int* height){
     char *mychars = " .:-=+*#%@";
-    //char *mychars = " `.-':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@";
-    int width, height, comp;
-    unsigned char *data = stbi_load(path, &width, &height, &comp, 0);
-    width = width;
-    height = height;
-    int count = 0;
+    int comp = 0;
+    int w,h;
+    unsigned char *data = stbi_load(path, &w,&h, &comp, 0);
+
+    *width = w;
+    *height = h;
+
+
+    char **frame = malloc(sizeof(char*)*(w*h)+1);
+
     if (data) {
-        int steps = 2;
-        int y = 0;
         int index = 0;
-        char frame[width*height*28];
-        char frame2[width*height*28];
-        for (size_t i = 0; i < (width*height)*comp; i+=comp*size) {
+        int count = 0;
+        for (size_t i = 0; i < (w*h)*comp; i+=comp*size) {
 
-            char pixel[50];
-            char color[28];
-            //sprintf(color,"\x1b[38;5;%dm",data[i]);
-            sprintf(color,"\033[38;2;%d;%d;%dm",data[i],data[i+1],data[i+2]);
-            sprintf(pixel,"%s%c"RESET,color,mychars[(data[i]*(strlen(mychars)-1)/255)]);
-            for(int j = 0; j < strlen(pixel); j++){
-                frame[index] = pixel[j];
-                index++;
-            }
+            char* pixel = malloc(sizeof(char)*26);
+            sprintf(pixel, "\033[38;2;%d;%d;%dm%c"RESET, data[i], data[i + 1], data[i + 2],
+                    mychars[(data[i] * (strlen(mychars) - 1) / 255)]);
 
-            count +=1;
+            frame[index] = pixel;
+            index++;
+            //printf("%s",pixel);
+            /* free(pixel); */
 
-            if(count == width/size){
-                frame[index] = '\n';
-                index++;
+            count ++;
+            if(count == w){
                 count = 0;
+             // puts("");
             }
         }
-        frame[index+1] = '\0';
-        printf("%s\n",frame);
     }
-    return 1;
+
+    return frame;
 }
 
 int main() {
 
     char *path = "sergen";
+    char **prev_frame = NULL;
+    char **currframe = NULL;
 
-    for(int i = 0; i < 2840; i +=1){
-        char str[10];
+    int width, height;
+
+    for(int i = 0; i < 50; i +=1){
+        printf("i %d\n",i);
+        char str[20];
         if(i > 999)
             sprintf(str,"./%s/%d.png",path,i);
         else if(i > 99)
@@ -96,11 +97,22 @@ int main() {
         else
             sprintf(str,"./%s/00%d.png",path,i);
 
-        drawImage(str,1);
-        //fflush(stdout);
-        printf("\nframe %s\n", str);
-        msleep(1000);
-        system("clear");
+
+        currframe = getImage(str, 1,&width,&height);
+
+        if(currframe != NULL){
+            if(prev_frame != NULL){
+                free_frame(prev_frame,(width)*(height));
+            }
+            prev_frame = currframe;
+        }
+        /* print_frame(currframe, width,height); */
+
+        msleep(30);
+
+        /* system("clear"); */
     }
+    /* free_frame(currframe,(width)*(height)); */
+    //free_frame(prev_frame,(width)*(height));
     return 0;
 }

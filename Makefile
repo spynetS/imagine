@@ -5,7 +5,7 @@
 # @version 0.1
 
 
-cc = gcc
+cc = gcc -Wall
 
 files = main.c -lm -lprinter
 
@@ -14,6 +14,9 @@ all: $(files)
 
 run: all
 	./main
+
+val: all
+	valgrind ./main
 
 clean:
 	rm -rf ./main
