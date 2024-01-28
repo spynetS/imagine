@@ -1,35 +1,30 @@
-//#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include <stdio.h>
 #include "printer.h"
+#include <stdlib.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 const size_t NUM_PIXELS_TO_PRINT = 1000U;
 
-void free_frame(char **frame,int size){
-    printf("size %d\n",size);
-    if(frame!=NULL){
-        for(int i = 0;i <= size; i ++){
-            if(frame[i] != NULL){
-                free(frame[i]);
-            }
-        }
-        free(frame);
-    }
-}
+typedef struct frame{
+    char **frame;
+    unsigned char* pixel_data;
+    int width, height, comp;
 
-void print_frame(char ** frame, int w,int h){
-    if(frame != NULL){
-        for(int i = 0;i < w*h; i ++){
-            if(i % w==0)
-                printf("\n");
-            printf("%s",frame[i]);
-        }
-    }
-}
+} Frame;
 
+
+Frame *newFrame(char *path){
+    Frame *new_frame = malloc(sizeof(Frame));
+    unsigned char *data = stbi_load(path, &new_frame->width, &new_frame->height, &new_frame->comp, 0);
+    new_frame->pixel_data = data;
+
+    new_frame->frame = malloc(sizeof(char*)*new_frame->width*new_frame->height);
+
+
+    return new_frame;
+}
 
 int getBrightness(int red, int green, int blue){
     //0.2126*R + 0.7152*G + 0.0722*B
@@ -40,54 +35,42 @@ int getBrightness(int red, int green, int blue){
     return (int)(red +green + blue);
 }
 
-char** getImage(char *path, int size, int* width, int* height){
+int drawImage(Frame *frame, int size){
     char *mychars = " .:-=+*#%@";
-    int comp = 0;
-    int w,h;
-    unsigned char *data = stbi_load(path, &w,&h, &comp, 0);
+    int width = frame->width;
+    int height = frame->height;
+    int comp = frame->comp;
+    unsigned char * data = frame->pixel_data;
 
-    *width = w;
-    *height = h;
+    int count = 0;
 
+    if (data){
 
-    char **frame = malloc(sizeof(char*)*(w*h)+1);
+        for (size_t i = 0; i < (width*height)*comp; i+=comp*size) {
 
-    if (data) {
-        int index = 0;
-        int count = 0;
-        for (size_t i = 0; i < (w*h)*comp; i+=comp*size) {
+            char pixel[100];
+            char color[58];
+            //sprintf(color,"\x1b[38;5;%dm",data[i]);
+            sprintf(color,"\033[38;2;%d;%d;%dm",data[i],data[i+1],data[i+2]);
+            sprintf(pixel,"%s%c"RESET,color,mychars[(data[i]*(strlen(mychars)-1)/255)]);
 
-            char* pixel = malloc(sizeof(char)*26);
-            sprintf(pixel, "\033[38;2;%d;%d;%dm%c"RESET, data[i], data[i + 1], data[i + 2],
-                    mychars[(data[i] * (strlen(mychars) - 1) / 255)]);
-
-            frame[index] = pixel;
-            index++;
-            //printf("%s",pixel);
-            /* free(pixel); */
-
-            count ++;
-            if(count == w){
+            printf("%s",pixel);
+            count++;
+            if(count == width){
+                printf("\n");
                 count = 0;
-             // puts("");
             }
         }
     }
-
-    return frame;
+    return 1;
 }
 
 int main() {
 
-    char *path = "sergen";
-    char **prev_frame = NULL;
-    char **currframe = NULL;
+    char *path = "oppenheimer";
 
-    int width, height;
-
-    for(int i = 0; i < 50; i +=1){
-        printf("i %d\n",i);
-        char str[20];
+    for(int i = 0; i < 2840; i +=1){
+        char str[10];
         if(i > 999)
             sprintf(str,"./%s/%d.png",path,i);
         else if(i > 99)
@@ -97,22 +80,12 @@ int main() {
         else
             sprintf(str,"./%s/00%d.png",path,i);
 
+        Frame *new_frame = newFrame(str);
+        drawImage(new_frame,1);
 
-        currframe = getImage(str, 1,&width,&height);
-
-        if(currframe != NULL){
-            if(prev_frame != NULL){
-                free_frame(prev_frame,(width)*(height));
-            }
-            prev_frame = currframe;
-        }
-        /* print_frame(currframe, width,height); */
-
+        printf("\nframe %s\n", str);
         msleep(30);
-
-        /* system("clear"); */
+        system("clear");
     }
-    /* free_frame(currframe,(width)*(height)); */
-    //free_frame(prev_frame,(width)*(height));
     return 0;
 }
