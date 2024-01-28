@@ -16,7 +16,7 @@ run: all
 	./main
 
 val: all
-	valgrind ./main
+	valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --read-inline-info=yes -s ./main
 
 clean:
 	rm -rf ./main
