@@ -7,7 +7,7 @@
 
 cc = gcc -Wall -lm -lprinter
 
-files = ./src/imagine.c
+files = ./src/imagine.c ./src/flagcer.c
 out = imagine
 
 all: $(files)

@@ -44,9 +44,12 @@ void draw_frame(Frame *prev_frame, Frame *new_frame, int characters, int color){
     int offsetX = 0;
     int offsetY = 0;
     char *mychars = " .isk@";
+    char *mychars_detailed = " .isk@";
 
     int x = 0;
     int y = 0;
+
+    if(characters == 2) color = 1;
 
     for(int i = 0; i < new_frame->width*new_frame->height*new_frame->comp; i +=new_frame->comp){
             if(new_frame->pixel_data[i] != prev_frame->pixel_data[i] ||
@@ -63,10 +66,13 @@ void draw_frame(Frame *prev_frame, Frame *new_frame, int characters, int color){
                 }
                 switch(characters){
                     case 0:
-                        sprintf(str,"%s%c "RESET,color_str,mychars[(new_frame->pixel_data[i]*(strlen(mychars)-1)/255)]);
+                        sprintf(str,"%s%c ",color_str,mychars[(new_frame->pixel_data[i]*(strlen(mychars)-1)/255)]);
+                        break;
+                    case 1:
+                        printf("%s%c ",color_str,mychars_detailed[(new_frame->pixel_data[i]*(strlen(mychars)-1)/255)]);
                         break;
                     case 2:
-                        sprintf(str,"%s██"RESET, color_str);
+                        sprintf(str,"%s██", color_str);
                         break;
                 }
                 setCharAt(x+offsetX,y+offsetY,str);
@@ -82,6 +88,10 @@ void draw_frame(Frame *prev_frame, Frame *new_frame, int characters, int color){
 void print_frame(Frame* frame, int characters, int color){
     int count = 0;
     char *mychars = " .isk@";
+    char *mychars_detailed = " .isk@";
+
+    if(characters == 2) color = 1;
+
     for(int i = 0; i < frame->width*frame->height*frame->comp; i +=frame->comp){
         char color_str[28] = "";
         switch(color){
@@ -91,10 +101,13 @@ void print_frame(Frame* frame, int characters, int color){
         }
         switch(characters){
             case 0:
-                printf("%s%c "RESET,color_str,mychars[(frame->pixel_data[i]*(strlen(mychars)-1)/255)]);
+                printf("%s%c ",color_str,mychars[(frame->pixel_data[i]*(strlen(mychars)-1)/255)]);
+                break;
+            case 1:
+                printf("%s%c ",color_str,mychars_detailed[(frame->pixel_data[i]*(strlen(mychars)-1)/255)]);
                 break;
             case 2:
-                printf("%s██"RESET, color_str);
+                printf("%s██", color_str);
                 break;
         }
         count ++;
@@ -120,7 +133,8 @@ char **__get_frame_names(char *path, int *file_count){
         (*file_count) = 0;
 
         while ((dir = readdir(d)) != NULL) {
-            if (dir->d_type == DT_REG){
+            const char *ext = strrchr (dir->d_name, '.');
+            if (dir->d_type == DT_REG && (!strcmp (ext+1, "png"))){
                 printf("%d\n",(*file_count));
                 file_names = realloc(file_names, ((*file_count) + 1) * sizeof(char *));
                 file_names[*file_count] = strdup(dir->d_name);
