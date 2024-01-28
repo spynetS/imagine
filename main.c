@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include "printer.h"
+#include <stdlib.h>
 #define BG_BLACK  "\x1b[40m"
 #define BG_RED    "\x1b[41m"
 #define BG_GREEN  "\x1b[42m"
@@ -39,34 +41,66 @@ int getBrightness(int red, int green, int blue){
     return (int)(red +green + blue);
 }
 
-int main(void) {
-    printf("%d\n",(getBrightness(0x02,0,0)*9)/255);
-
-    unsigned char red = 0xFF;
-    //char *mychars = " `.-':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@@";
-    //char *mychars = " .,-isk#";
+int drawImage(char *path, int size){
     char *mychars = " .:-=+*#%@";
+    //char *mychars = " `.-':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@";
     int width, height, comp;
-    unsigned char *data = stbi_load("john.jpg", &width, &height, &comp, 0);
+    unsigned char *data = stbi_load(path, &width, &height, &comp, 0);
     width = width;
     height = height;
     int count = 0;
     if (data) {
-        printf("width = %d, height = %d, comp = %d (channels)\n", width, height, comp);
-        char pixel[comp];
-        int pixelc = 0;
-        for (size_t i = 0; i < (width*height)*comp; i++) {
+        int steps = 2;
+        int y = 0;
+        int index = 0;
+        char frame[width*height*28];
+        char frame2[width*height*28];
+        for (size_t i = 0; i < (width*height)*comp; i+=comp*size) {
 
-            printf("%c",mychars[(data[i]*(strlen(mychars)-1)/255)]);
+            char pixel[50];
+            char color[28];
+            //sprintf(color,"\x1b[38;5;%dm",data[i]);
+            sprintf(color,"\033[38;2;%d;%d;%dm",data[i],data[i+1],data[i+2]);
+            sprintf(pixel,"%s%c"RESET,color,mychars[(data[i]*(strlen(mychars)-1)/255)]);
+            for(int j = 0; j < strlen(pixel); j++){
+                frame[index] = pixel[j];
+                index++;
+            }
 
-            if(i%comp==0)
-                count++;
-            if(count == width){
-                printf("\n");
+            count +=1;
+
+            if(count == width/size){
+                frame[index] = '\n';
+                index++;
                 count = 0;
             }
         }
-        printf("\n");
+        frame[index+1] = '\0';
+        printf("%s\n",frame);
+    }
+    return 1;
+}
+
+int main() {
+
+    char *path = "sergen";
+
+    for(int i = 0; i < 2840; i +=1){
+        char str[10];
+        if(i > 999)
+            sprintf(str,"./%s/%d.png",path,i);
+        else if(i > 99)
+            sprintf(str,"./%s/%d.png",path,i);
+        else if(i > 9)
+            sprintf(str,"./%s/0%d.png",path,i);
+        else
+            sprintf(str,"./%s/00%d.png",path,i);
+
+        drawImage(str,1);
+        //fflush(stdout);
+        printf("\nframe %s\n", str);
+        msleep(1000);
+        system("clear");
     }
     return 0;
 }

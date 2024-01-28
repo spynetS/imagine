@@ -7,7 +7,7 @@
 
 cc = gcc
 
-files = main.c -lm
+files = main.c -lm -lprinter
 
 all: $(files)
 	$(cc) -o main $(files)
