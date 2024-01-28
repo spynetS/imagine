@@ -3,16 +3,16 @@
 #include "imagine.h"
 #include "printer.h"
 
-int main() {
+int main(int argv, char **argc) {
 
-    char *path = "oppenheimer_sd";
+    char *path = argc[1];
     Frame *prev_frame = NULL;
     Frame *new_frame = NULL;
     system("clear");
 
     puts(HIDE_CURSOR);
 
-    for(int i = 2; i < 1500; i +=1){
+    for(int i = 1500; i < 3500; i +=1){
         char str[25];
         if(i > 999)
             sprintf(str,"./%s/%d.png",path,i);

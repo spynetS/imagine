@@ -7,10 +7,10 @@
 
 cc = gcc -Wall -lm -lprinter
 
-files = imagine.c
+files = ./src/imagine.c
 
 all: $(files)
-	$(cc) -o main main.c $(files)
+	$(cc) -o main ./src/main.c $(files)
 
 img:
 	$(cc) -o main single.c $(files) flagcer.c
