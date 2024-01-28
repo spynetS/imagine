@@ -2,8 +2,6 @@
 #define IMAGINE_H_
 
 typedef struct frame{
-    char **frame;
-    int strings;
     unsigned char* pixel_data;
     int width, height, comp;
 
