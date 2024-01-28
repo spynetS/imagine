@@ -44,7 +44,7 @@ void draw_frame(Frame *prev_frame, Frame *new_frame, int characters, int color){
     int offsetX = 0;
     int offsetY = 0;
     char *mychars = " .isk@";
-    char *mychars_detailed = " .isk@";
+    char *mychars_detailed = " `.-':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@";
 
     int x = 0;
     int y = 0;
@@ -88,7 +88,7 @@ void draw_frame(Frame *prev_frame, Frame *new_frame, int characters, int color){
 void print_frame(Frame* frame, int characters, int color){
     int count = 0;
     char *mychars = " .isk@";
-    char *mychars_detailed = " .isk@";
+    char *mychars_detailed = " `.-':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@";
 
     if(characters == 2) color = 1;
 
