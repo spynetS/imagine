@@ -19,18 +19,20 @@ int isDirectory(const char *path) {
     return S_ISDIR(path_stat.st_mode);
 }
 
-int character = 2;
-int color = 1;
+Settings settings;
 
 void setOption(int av,char **ac){
-    character = atoi(ac[1]);
+    settings.character_mode = atoi(ac[1]);
 }
 void setColor(int av,char **ac){
-    color = atoi(ac[1]);
+    settings.color = atoi(ac[1]);
 }
 
 
 int main(int argv, char **argc) {
+
+    settings.character_mode = 3;
+    settings.color = 1;
 
 
     addFlag("-t", "--type", "Sets the type to be outputed as\n 0 ascii, 1 assci more detail, 2 unicode block", setOption);
@@ -39,15 +41,19 @@ int main(int argv, char **argc) {
     addHelp();
     parse(argv,argc);
 
-    char *path = argc[argv-1];
-    puts(path);
-    if (isDirectory(path)) {
+
+    settings.path = argc[argv-1];
+
+    settings.max_width = termWidth();
+    settings.max_height = termHeight();
+
+    if (isDirectory(settings.path)) {
 
         printf("width %d\n", termWidth());
-        print_folder(path,termWidth(),termHeight(),character,color);
+        print_folder(&settings);
     }
     else{
-        print_image(path,termWidth(),termHeight(), character,color);
+        print_image(&settings);
     }
 
     return 0;

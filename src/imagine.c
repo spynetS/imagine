@@ -22,6 +22,12 @@
 **  - music
 */
 
+char *ascii0   = " .isk@";
+char *ascii1   = " `.-':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@";
+
+char *unicode1[] = {"░", "▒", "▓", "█"};
+int unicode = 4;
+
 Frame *new_frame(char *path){
     Frame *new_frame  = malloc(sizeof(Frame));
     new_frame->width  = 0;
@@ -55,13 +61,11 @@ void draw_frame(Frame *prev_frame, Frame *new_frame, int characters, int color){
 
     int offsetX = 0;
     int offsetY = 0;
-    char *mychars = " .isk@";
-    char *mychars_detailed = " `.-':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@";
 
     int x = 0;
     int y = 0;
 
-    if(characters == 2) color = 1;
+    if(characters == 3) color = 1;
 
     for(int i = 0; i < new_frame->width*new_frame->height*new_frame->comp; i +=new_frame->comp){
             if(new_frame->pixel_data[i] != prev_frame->pixel_data[i] ||
@@ -81,14 +85,19 @@ void draw_frame(Frame *prev_frame, Frame *new_frame, int characters, int color){
                         break;
 
                 }
+                int index = 0;
                 switch(characters){
                     case 0:
-                        sprintf(str,"%s%c ",color_str,mychars[(brightness(new_frame->pixel_data[i],new_frame->pixel_data[i+1],new_frame->pixel_data[i+2])*(strlen(mychars)-1)/255)]);
+                        sprintf(str,"%s%c ",color_str,ascii0[(brightness(new_frame->pixel_data[i],new_frame->pixel_data[i+1],new_frame->pixel_data[i+2])*(strlen(ascii0)-1)/255)]);
                         break;
                     case 1:
-                        sprintf(str,"%s%c ",color_str,mychars_detailed[(brightness(new_frame->pixel_data[i],new_frame->pixel_data[i+1],new_frame->pixel_data[i+2])*(strlen(mychars_detailed)-1)/255)]);
+                        sprintf(str,"%s%c ",color_str,ascii1[(brightness(new_frame->pixel_data[i],new_frame->pixel_data[i+1],new_frame->pixel_data[i+2])*(strlen(ascii1)-1)/255)]);
                         break;
                     case 2:
+                        index = (int)(brightness(new_frame->pixel_data[i],new_frame->pixel_data[i+1],new_frame->pixel_data[i+2])*(unicode-1)/255);
+                        sprintf(str,"%s%s%s",color_str,unicode1[index],unicode1[index]);
+                        break;
+                    case 3:
                         sprintf(str,"%s██", color_str);
                         break;
                 }
@@ -104,10 +113,8 @@ void draw_frame(Frame *prev_frame, Frame *new_frame, int characters, int color){
 
 void print_frame(Frame* frame, int characters, int color){
     int count = 0;
-    char *mychars = " .isk@";
-    char *mychars_detailed = " `.-':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@";
 
-    if(characters == 2) color = 1;
+    if(characters == 3) color = 1;
 
     for(int i = 0; i < frame->width*frame->height*frame->comp; i +=frame->comp){
         char color_str[28] = "";
@@ -119,14 +126,19 @@ void print_frame(Frame* frame, int characters, int color){
                 sprintf(color_str,"\033[48;2;%d;%d;%dm",frame->pixel_data[i],frame->pixel_data[i+1],frame->pixel_data[i+2]);
                 break;
         }
+        int index= 0;
         switch(characters){
             case 0:
-                printf("%s%c ",color_str,mychars[(brightness(frame->pixel_data[i],frame->pixel_data[i+1],frame->pixel_data[i+2])*(strlen(mychars)-1)/255)]);
+                printf("%s%c ",color_str,ascii0[(brightness(frame->pixel_data[i],frame->pixel_data[i+1],frame->pixel_data[i+2])*(strlen(ascii0)-1)/255)]);
                 break;
             case 1:
-                printf("%s%c ",color_str,mychars_detailed[(brightness(frame->pixel_data[i],frame->pixel_data[i+1],frame->pixel_data[i+2])*(strlen(mychars_detailed)-1)/255)]);
+                printf("%s%c ",color_str,ascii1[(brightness(frame->pixel_data[i],frame->pixel_data[i+1],frame->pixel_data[i+2])*(strlen(ascii1)-1)/255)]);
                 break;
             case 2:
+                index = (int)(brightness(frame->pixel_data[i],frame->pixel_data[i+1],frame->pixel_data[i+2])*(unicode-1)/255);
+                printf("%s%s%s",color_str,unicode1[index],unicode1[index]);
+                break;
+            case 3:
                 printf("%s██", color_str);
                 break;
         }
@@ -192,9 +204,9 @@ int get_file_count(char* path){
     return file_count;
 }
 
-void print_folder(char *path,double max_width, double max_height, int characters, int color){
+void print_folder(Settings *settings){
     //int file_count = 0;
-    int file_count = get_file_count(path);
+    int file_count = get_file_count(settings->path);
 
     Frame *prev_frame = NULL;
     Frame *curr_frame = NULL;
@@ -204,7 +216,7 @@ void print_folder(char *path,double max_width, double max_height, int characters
     for (int i = 1; i < file_count; i++) {
 
         char file_path[100]; // change to dynamic
-        sprintf(file_path, "%s/%d.png",path,i);
+        sprintf(file_path, "%s/%d.png",settings->path,i);
 
         if(curr_frame != NULL){
             if(prev_frame != NULL){
@@ -215,13 +227,13 @@ void print_folder(char *path,double max_width, double max_height, int characters
 
         curr_frame = new_frame(file_path);
 
-        double scaler = get_scale_factor(curr_frame->width, curr_frame->height, max_width,max_height);
+        double scaler = get_scale_factor(curr_frame->width, curr_frame->height, settings->max_width,settings->max_height);
         scale_frame(curr_frame,curr_frame->width*scaler, curr_frame->height*scaler);
         /* printf("%lf\n",scaler); */
         if(prev_frame != NULL){
             /* puts(file_path); */
 
-            draw_frame(prev_frame,curr_frame,characters,color);
+            draw_frame(prev_frame,curr_frame,settings->character_mode,settings->color);
         }
         else{
             /* print_frame(curr_frame,characters,color); */
@@ -250,6 +262,9 @@ void scale_frame(Frame *frame, int width, int height){
 }
 
 double get_scale_factor(int w, int h,double wmax,double hmax){
+
+    if(wmax == -1 || hmax == -1) return 1;
+
     double scaler = wmax / ((w == 0) ? 1: w)/2;
     if(h*scaler > hmax){
         scaler = hmax / ((h == 0) ? 1: h);
@@ -258,15 +273,16 @@ double get_scale_factor(int w, int h,double wmax,double hmax){
 }
 
 
-void print_image(char *path, double max_width, double max_height, int characters, int color){
-    puts(path);
+void print_image (Settings *settings){
 
-    Frame *frame = new_frame(path);
+    puts(settings->path);
+
+    Frame *frame = new_frame(settings->path);
     printf("Channels %d\n", frame->comp);
-    double scaler = get_scale_factor(frame->width, frame->height, max_width,max_height);
+    double scaler = get_scale_factor(frame->width, frame->height, settings->max_width,settings->max_height);
 
     scale_frame(frame,frame->width*scaler, frame->height*scaler);
 
-    print_frame(frame,  characters, color);
+    print_frame(frame, settings->character_mode, settings->color);
     free_frame(frame);
 }

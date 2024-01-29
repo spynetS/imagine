@@ -9,6 +9,17 @@ typedef struct frame{
 
 } Frame;
 
+typedef struct settings{
+    int character_mode;
+    int color;
+    int width;
+    int height;
+    double max_width;
+    double max_height;
+    char *path;
+
+} Settings;
+
 
 Frame *new_frame(char *path);
 
@@ -36,8 +47,8 @@ int load_frame(Frame *frame, int option, int color);
 void scale_frame(Frame *frame, int width, int height);
 
 
-void print_image (char *path, double max_width, double max_height, int characters, int color);
-void print_folder(char *path, double max_width, double max_height, int characters, int color);
+void print_image (Settings *settings);
+void print_folder(Settings *settings);
 double get_scale_factor(int w, int h,double wmax,double hmax);
 
 #endif // IMAGINE_H_
