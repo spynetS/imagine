@@ -238,7 +238,7 @@ void scale_frame(Frame *frame, int width, int height){
     int nw = width;
     int nh = height;
 
-    unsigned char *resizedPixels = malloc(nh * nw * 3);
+    unsigned char *resizedPixels = malloc(nh * nw * frame->comp);
     stbir_resize_uint8_linear(frame->pixel_data, frame->width, frame->height, 0, resizedPixels, nw, nh, 0, frame->comp);
     free(frame->pixel_data);
 
