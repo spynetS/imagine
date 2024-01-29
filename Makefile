@@ -1,4 +1,4 @@
-##
+#
 # Project Title
 #
 # @file
@@ -7,21 +7,22 @@
 
 cc = gcc -Wall -lm -lprinter
 
-files = ./src/imagine.c
+files = ./src/imagine.c ./src/flagcer.c
+out = imagine
 
 all: $(files)
-	$(cc) -o main ./src/main.c $(files)
+	$(cc) -o $(out) ./src/main.c $(files)
 
 img:
-	$(cc) -o main single.c $(files) flagcer.c
+	$(cc) -o $(out) single.c $(files) flagcer.c
 
 run: all
-	./main
+	./$(out)
 
 val: all
-	valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --read-inline-info=yes -s ./main
+	valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --read-inline-info=yes -s ./$(out)
 
 clean:
-	rm -rf ./main
+	rm -rf ./$(out)
 
 # end

@@ -1,4 +1,3 @@
-
 /*
     Alfred Roos 2023-02-16
     TO USE 
