@@ -42,6 +42,7 @@ void free_frame(Frame* frame){
 
 int brightness(int red, int green, int blue){
     //0.299 r + 0.587 g + 0.114 b
+    //return red;
     return (0.299*red+green*0.587+blue*0.114);
 }
 
@@ -191,7 +192,7 @@ int get_file_count(char* path){
     return file_count;
 }
 
-void print_folder(char *path,double max_width, int characters, int color){
+void print_folder(char *path,double max_width, double max_height, int characters, int color){
     //int file_count = 0;
     int file_count = get_file_count(path);
 
@@ -214,8 +215,8 @@ void print_folder(char *path,double max_width, int characters, int color){
 
         curr_frame = new_frame(file_path);
 
-        double scaler = max_width / curr_frame->width;// == 0? 1: max_width/curr_frame->width;
-        scale_frame(curr_frame,curr_frame->width*scaler/2, curr_frame->height*scaler/2);
+        double scaler = get_scale_factor(curr_frame->width, curr_frame->height, max_width,max_height);
+        scale_frame(curr_frame,curr_frame->width*scaler, curr_frame->height*scaler);
         /* printf("%lf\n",scaler); */
         if(prev_frame != NULL){
             /* puts(file_path); */
@@ -248,13 +249,23 @@ void scale_frame(Frame *frame, int width, int height){
 
 }
 
-void print_image(char *path, double max_width,int characters, int color){
+double get_scale_factor(int w, int h,double wmax,double hmax){
+    double scaler = wmax / ((w == 0) ? 1: w)/2;
+    if(h*scaler > hmax){
+        scaler = hmax / ((h == 0) ? 1: h);
+    }
+    return scaler;
+}
+
+
+void print_image(char *path, double max_width, double max_height, int characters, int color){
     puts(path);
 
     Frame *frame = new_frame(path);
     printf("Channels %d\n", frame->comp);
-    double scaler = max_width / frame->width;// == 0? 1: max_width/curr_frame->width;
-    scale_frame(frame,frame->width*scaler/2, frame->height*scaler/2);
+    double scaler = get_scale_factor(frame->width, frame->height, max_width,max_height);
+
+    scale_frame(frame,frame->width*scaler, frame->height*scaler);
 
     print_frame(frame,  characters, color);
     free_frame(frame);

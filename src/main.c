@@ -44,10 +44,10 @@ int main(int argv, char **argc) {
     if (isDirectory(path)) {
 
         printf("width %d\n", termWidth());
-        print_folder(path,termWidth(),character,color);
+        print_folder(path,termWidth(),termHeight(),character,color);
     }
     else{
-        print_image(path,termWidth(), character,color);
+        print_image(path,termWidth(),termHeight(), character,color);
     }
 
     return 0;

@@ -35,9 +35,9 @@ int load_frame(Frame *frame, int option, int color);
 
 void scale_frame(Frame *frame, int width, int height);
 
-void print_image(char *path, double max_width,int characters, int color);
 
-void print_folder(char *path,double max_width, int characters, int color);
-
+void print_image (char *path, double max_width, double max_height, int characters, int color);
+void print_folder(char *path, double max_width, double max_height, int characters, int color);
+double get_scale_factor(int w, int h,double wmax,double hmax);
 
 #endif // IMAGINE_H_
