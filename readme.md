@@ -4,6 +4,12 @@ Imagine is a small c program that renders images in terminal
 with ascii or unicode with colors!
 Imagine is built with the stb librarys.
 
+## Screenshots
+
+![Screen1](https://github.com/spynetS/imagine/blob/main/Images/Screen2.jpg)
+![Screen2](https://github.com/spynetS/imagine/blob/main/Images/Screen1.jpg)
+![Screen3](https://github.com/spynetS/imagine/blob/main/Images/Screen0.jpg)
+
 ## Usage 
 `imagine [options] path`
 
