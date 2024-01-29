@@ -1,3 +1,5 @@
+//Alfred Roos 2023
+
 #ifndef IMAGINE_H_
 #define IMAGINE_H_
 
@@ -31,9 +33,11 @@ int getBrightness(int red, int green, int blue);
   * */
 int load_frame(Frame *frame, int option, int color);
 
-void print_image(char *path, int characters, int color);
+void scale_frame(Frame *frame, int width, int height);
 
-void print_folder(char *path, int characters, int color);
+void print_image(char *path, double max_width,int characters, int color);
+
+void print_folder(char *path,double max_width, int characters, int color);
 
 
 #endif // IMAGINE_H_

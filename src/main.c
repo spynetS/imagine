@@ -1,3 +1,5 @@
+//Alfred Roos 2023
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "imagine.h"
@@ -16,7 +18,7 @@ int isDirectory(const char *path) {
     return S_ISDIR(path_stat.st_mode);
 }
 
-int character = 1;
+int character = 2;
 int color = 1;
 
 void setOption(int av,char **ac){
@@ -39,10 +41,12 @@ int main(int argv, char **argc) {
     char *path = argc[argv-1];
     puts(path);
     if (isDirectory(path)) {
-        print_folder(path,character,color);
+
+        printf("width %d\n", termWidth());
+        print_folder(path,termWidth(),character,color);
     }
     else{
-        print_image(path, character,color);
+        print_image(path,termWidth(), character,color);
     }
 
     return 0;

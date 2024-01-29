@@ -1,3 +1,4 @@
+//Alfred Roos 2023
 #include <stdio.h>
 #include "printer.h"
 #include "imagine.h"
@@ -5,6 +6,9 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
+#include "stb_image_resize2.h"
 
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
@@ -17,9 +21,6 @@
 **  - play video without self extracting frames
 **  - music
 */
-
-
-
 
 Frame *new_frame(char *path){
     Frame *new_frame  = malloc(sizeof(Frame));
@@ -113,6 +114,9 @@ void print_frame(Frame* frame, int characters, int color){
             case 1:
                 sprintf(color_str,"\033[38;2;%d;%d;%dm",frame->pixel_data[i],frame->pixel_data[i+1],frame->pixel_data[i+2]);
                 break;
+            case 2:
+                sprintf(color_str,"\033[48;2;%d;%d;%dm",frame->pixel_data[i],frame->pixel_data[i+1],frame->pixel_data[i+2]);
+                break;
         }
         switch(characters){
             case 0:
@@ -187,7 +191,7 @@ int get_file_count(char* path){
     return file_count;
 }
 
-void print_folder(char *path, int characters, int color){
+void print_folder(char *path,double max_width, int characters, int color){
     //int file_count = 0;
     int file_count = get_file_count(path);
 
@@ -210,12 +214,16 @@ void print_folder(char *path, int characters, int color){
 
         curr_frame = new_frame(file_path);
 
+        double scaler = max_width / curr_frame->width;// == 0? 1: max_width/curr_frame->width;
+        scale_frame(curr_frame,curr_frame->width*scaler/2, curr_frame->height*scaler/2);
+        /* printf("%lf\n",scaler); */
         if(prev_frame != NULL){
             /* puts(file_path); */
+
             draw_frame(prev_frame,curr_frame,characters,color);
         }
         else{
-            print_frame(curr_frame,characters,color);
+            /* print_frame(curr_frame,characters,color); */
         }
         msleep(33);
 
@@ -225,9 +233,29 @@ void print_folder(char *path, int characters, int color){
     puts(SHOW_CURSOR);
 }
 
-void print_image(char *path, int characters, int color){
+void scale_frame(Frame *frame, int width, int height){
+
+    int nw = width;
+    int nh = height;
+
+    unsigned char *resizedPixels = malloc(nh * nw * 3);
+    stbir_resize_uint8_linear(frame->pixel_data, frame->width, frame->height, 0, resizedPixels, nw, nh, 0, frame->comp);
+    free(frame->pixel_data);
+
+    frame->pixel_data = resizedPixels;
+    frame->width = nw;
+    frame->height = nh;
+
+}
+
+void print_image(char *path, double max_width,int characters, int color){
     puts(path);
+
     Frame *frame = new_frame(path);
+
+    double scaler = max_width / frame->width;// == 0? 1: max_width/curr_frame->width;
+    scale_frame(frame,frame->width*scaler/2, frame->height*scaler/2);
+
     print_frame(frame,  characters, color);
     free_frame(frame);
 }
