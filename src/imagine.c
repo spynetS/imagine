@@ -252,7 +252,7 @@ void print_image(char *path, double max_width,int characters, int color){
     puts(path);
 
     Frame *frame = new_frame(path);
-
+    printf("Channels %d\n", frame->comp);
     double scaler = max_width / frame->width;// == 0? 1: max_width/curr_frame->width;
     scale_frame(frame,frame->width*scaler/2, frame->height*scaler/2);
 
