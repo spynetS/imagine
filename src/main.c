@@ -1,48 +1,54 @@
+
+//Alfred Roos 2023
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "imagine.h"
 #include "printer.h"
+#include "string.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include "flagser.h"
+
+int isDirectory(const char *path) {
+    struct stat path_stat;
+    stat(path, &path_stat);
+
+    // Check if the path corresponds to a directory
+    return S_ISDIR(path_stat.st_mode);
+}
+
+int character = 2;
+int color = 1;
+
+void setOption(int av,char **ac){
+    character = atoi(ac[1]);
+}
+void setColor(int av,char **ac){
+    color = atoi(ac[1]);
+}
+
 
 int main(int argv, char **argc) {
 
-    char *path = argc[1];
-    Frame *prev_frame = NULL;
-    Frame *new_frame = NULL;
-    system("clear");
 
-    puts(HIDE_CURSOR);
+    addFlag("-t", "--type", "Sets the type to be outputed as\n 0 ascii, 1 assci more detail, 2 unicode block", setOption);
+    addFlag("-c", "--color", "Sets the if we should output with color (escape code)\n 0 no color, 1 forground color", setColor);
 
-    for(int i = 1; i < 500; i +=1){
-        char str[25];
-        if(i > 999)
-            sprintf(str,"./%s/%d.png",path,i);
-        else if(i > 99)
-            sprintf(str,"./%s/%d.png",path,i);
-        else if(i > 9)
-            sprintf(str,"./%s/0%d.png",path,i);
-        else
-            sprintf(str,"./%s/00%d.png",path,i);
+    addHelp();
+    parse(argv,argc);
 
-        if(new_frame != NULL){
-            if(prev_frame != NULL){
-                free_frame(prev_frame);
-            }
-            prev_frame = new_frame;
-        }
+    char *path = argc[argv-1];
+    puts(path);
+    if (isDirectory(path)) {
 
-        new_frame = newFrame(str);
-        load_frame(new_frame,2,1);
-
-        if(prev_frame != NULL)
-            draw_frame(prev_frame,new_frame);
-        else
-            print_frame(new_frame);
-
-        msleep(0);
+        printf("width %d\n", termWidth());
+        print_folder(path,termWidth(),character,color);
     }
-    free_frame(new_frame);
-    free_frame(prev_frame);
+    else{
+        print_image(path,termWidth(), character,color);
+    }
 
-    puts(SHOW_CURSOR);
     return 0;
 }
