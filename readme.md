@@ -27,12 +27,9 @@ extract the frames from a yt url
 
 ### Options
 
-- `-t` `--type`  - specifies mode, 0 ascii low res, 1 ascii high res, (2 unicode)
+- `-t` `--type`  - specifies mode, 0 ascii low res, 1 ascii high res, 2 unicode shades, (3 pixel mode)
 - `-c` `--color` - specifies the color mode, 0 no color, (1 forground), 2 background
 
-
-## TODO
-- [ ] stream videos
 
 
 ### Athor

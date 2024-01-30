@@ -11,6 +11,8 @@
 #include <unistd.h>
 #include "flagser.h"
 
+Settings settings;
+
 int isDirectory(const char *path) {
     struct stat path_stat;
     stat(path, &path_stat);
@@ -18,8 +20,6 @@ int isDirectory(const char *path) {
     // Check if the path corresponds to a directory
     return S_ISDIR(path_stat.st_mode);
 }
-
-Settings settings;
 
 void setOption(int av,char **ac){
     settings.character_mode = atoi(ac[1]);
