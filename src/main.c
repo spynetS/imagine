@@ -29,7 +29,8 @@ void setColor(int av,char **ac){
 }
 
 void playVideo(){
-
+    system("mkdir video_temp");
+    system("");
 }
 
 

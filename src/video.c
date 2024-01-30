@@ -62,7 +62,7 @@ int main()
         print_frame(my_frame, 3, 1);
 
         free_frame(my_frame);
-        //free(data);
+        msleep(33);
     }
 
     // Flush and close input pipe
