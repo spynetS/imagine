@@ -33,6 +33,17 @@ Frame *new_frame(char *path){
 
     return new_frame;
 }
+Frame *new_frame_data(unsigned char *pixels, int width, int height,int comp){
+
+    Frame *new_frame  = malloc(sizeof(Frame));
+    new_frame->width  = width;
+    new_frame->height = height;
+    new_frame->comp   = comp;
+
+    new_frame->pixel_data = pixels;
+
+    return new_frame;
+}
 
 void free_frame(Frame* frame){
     free(frame->pixel_data);

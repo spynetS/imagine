@@ -21,6 +21,8 @@ typedef struct settings{
 } Settings;
 
 
+Frame *new_frame_data(unsigned char *pixels, int width, int height,int comp);
+
 Frame *new_frame(char *path);
 
 void free_frame(Frame* frame);

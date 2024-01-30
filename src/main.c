@@ -28,13 +28,17 @@ void setColor(int av,char **ac){
     settings.color = atoi(ac[1]);
 }
 
+void playVideo(){
+
+}
+
 
 int main(int argv, char **argc) {
 
     settings.character_mode = 3;
     settings.color = 1;
 
-
+    addFlag("-v", "--video", "Plays video", playVideo);
     addFlag("-t", "--type", "Sets the type to be outputed as\n 0 ascii, 1 assci more detail, 2 unicode block", setOption);
     addFlag("-c", "--color", "Sets the if we should output with color (escape code)\n 0 no color, 1 forground color", setColor);
 
