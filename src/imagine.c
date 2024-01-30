@@ -45,72 +45,67 @@ int brightness(int red, int green, int blue){
     return (0.299*red+green*0.587+blue*0.114);
 }
 
-void draw_frame(Frame *prev_frame, Frame *curr_frame, int characters, int color){
+void set_pixel(char *str, int i, Frame* frame, int characters, int color){
+    int contrast = 0;
+    char color_str[28] = "";
+    switch(color){
+        case 1:
+            sprintf(color_str,"\033[38;2;%d;%d;%dm",MIN(frame->pixel_data[i]+contrast,255),MIN(frame->pixel_data[i+1]+contrast,255),MIN(frame->pixel_data[i+2]+contrast,255));
+            break;
+        case 2:
+            sprintf(color_str,"\033[48;2;%d;%d;%dm",MIN(frame->pixel_data[i]+contrast,255),MIN(frame->pixel_data[i+1]+contrast,255),MIN(frame->pixel_data[i+2]+contrast,255));
+            break;
 
-    if(prev_frame == NULL){
-        print_frame(curr_frame,characters,color);
-        return;
     }
-
-    for(int i = 0; i < curr_frame->width*curr_frame->height*curr_frame->comp; i +=curr_frame->comp){
-            if(curr_frame->pixel_data[i] != prev_frame->pixel_data[i] ||
-                curr_frame->pixel_data[i+1] != prev_frame->pixel_data[i+1] ||
-                curr_frame->pixel_data[i+2] != prev_frame->pixel_data[i+2]){
-
-                print_frame(curr_frame, characters, color);
-            }
+    int index = 0;
+    switch(characters){
+        case 0:
+            sprintf(str,"%s%c ",color_str,ascii0[(brightness(frame->pixel_data[i],frame->pixel_data[i+1],frame->pixel_data[i+2])*(strlen(ascii0)-1)/255)]);
+            break;
+        case 1:
+            sprintf(str,"%s%c ",color_str,ascii1[(brightness(frame->pixel_data[i],frame->pixel_data[i+1],frame->pixel_data[i+2])*(strlen(ascii1)-1)/255)]);
+            break;
+        case 2:
+            index = (int)(brightness(frame->pixel_data[i],frame->pixel_data[i+1],frame->pixel_data[i+2])*(unicode-1)/255);
+            sprintf(str,"%s%s%s",color_str,unicode1[index],unicode1[index]);
+            break;
+        case 3:
+            sprintf(str,"%s██", color_str);
+            break;
     }
 }
 
-void print_frame(Frame* frame, int characters, int color){
-
-    if(characters == 3) color = 1;
-
-    int contrast = 0;
+void draw_frame(Frame *prev_frame, Frame *curr_frame, int characters, int color){
 
     int offsetX = 0;
     int offsetY = 0;
 
     int x = 0;
     int y = 0;
+    if(characters == 3) color = 1;
 
-    for(int i = 0; i < frame->width*frame->height*frame->comp; i +=frame->comp){
+    for(int i = 0; i < curr_frame->width*curr_frame->height*curr_frame->comp; i +=curr_frame->comp){
+        if(prev_frame == NULL || (curr_frame->pixel_data[i] != prev_frame->pixel_data[i] ||
+            curr_frame->pixel_data[i+1] != prev_frame->pixel_data[i+1] ||
+            curr_frame->pixel_data[i+2] != prev_frame->pixel_data[i+2])){
 
-        char str[50];
-        char color_str[28] = "";
-        switch(color){
-            case 1:
-                sprintf(color_str,"\033[38;2;%d;%d;%dm",MIN(frame->pixel_data[i]+contrast,255),MIN(frame->pixel_data[i+1]+contrast,255),MIN(frame->pixel_data[i+2]+contrast,255));
-                break;
-            case 2:
-                sprintf(color_str,"\033[48;2;%d;%d;%dm",MIN(frame->pixel_data[i]+contrast,255),MIN(frame->pixel_data[i+1]+contrast,255),MIN(frame->pixel_data[i+2]+contrast,255));
-                break;
+            char str[50];
+            set_pixel(str, i, curr_frame,characters,color);
+
+            setCharAt(x+offsetX,y+offsetY,str);
 
         }
-        int index = 0;
-        switch(characters){
-            case 0:
-                sprintf(str,"%s%c ",color_str,ascii0[(brightness(frame->pixel_data[i],frame->pixel_data[i+1],frame->pixel_data[i+2])*(strlen(ascii0)-1)/255)]);
-                break;
-            case 1:
-                sprintf(str,"%s%c ",color_str,ascii1[(brightness(frame->pixel_data[i],frame->pixel_data[i+1],frame->pixel_data[i+2])*(strlen(ascii1)-1)/255)]);
-                break;
-            case 2:
-                index = (int)(brightness(frame->pixel_data[i],frame->pixel_data[i+1],frame->pixel_data[i+2])*(unicode-1)/255);
-                sprintf(str,"%s%s%s",color_str,unicode1[index],unicode1[index]);
-                break;
-            case 3:
-                sprintf(str,"%s██", color_str);
-                break;
-        }
-        setCharAt(x+offsetX,y+offsetY,str);
-
         x += 2; // we add 2 becuase we print 2 chars
-        if(x == frame->width*2){
+        if(x == curr_frame->width*2){
             x = 0;
             y++;
         }
     }
+}
+
+void print_frame(Frame* frame, int characters, int color){
+
+    draw_frame(NULL, frame,characters ,color );
 }
 
 char **__get_frame_names(char *path, int *file_count){
@@ -185,16 +180,9 @@ void print_folder(Settings *settings){
 
         double scaler = get_scale_factor(curr_frame->width, curr_frame->height, settings->max_width,settings->max_height);
         scale_frame(curr_frame,curr_frame->width*scaler, curr_frame->height*scaler);
-        /* printf("%lf\n",scaler); */
-        if(prev_frame != NULL){
-            /* puts(file_path); */
 
-            draw_frame(prev_frame,curr_frame,settings->character_mode,settings->color);
-        }
-        else{
-            print_frame(curr_frame,settings->character_mode,settings->color);
-        }
-        msleep(0);
+        draw_frame(prev_frame,curr_frame,settings->character_mode,settings->color);
+        msleep(33);
 
     }
     free_frame(curr_frame);
