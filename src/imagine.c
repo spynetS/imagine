@@ -29,6 +29,12 @@ Frame *new_frame(char *path){
 
     unsigned char *data = stbi_load(path, &(new_frame->width), &(new_frame->height), &(new_frame->comp), 0);
 
+    /* for(int i = 0; i < new_frame->width*new_frame->height*new_frame->comp;i++){ */
+    /*     msleep(200); */
+    /*     printf("%d,%d,%d\n",data[i],data[i+1],data[i+2]); */
+    /*     i++; */
+    /* } */
+    /* exit(1); */
     new_frame->pixel_data = data;
 
     return new_frame;
