@@ -37,6 +37,8 @@ int load_frame(Frame *frame, int option, int color);
 
 void scale_frame(Frame *frame, int width, int height);
 
+int set_res(Settings *settings);
+int render_media (Settings *settings);
 
 void print_image (Settings *settings);
 void print_folder(Settings *settings);

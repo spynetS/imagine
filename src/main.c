@@ -58,7 +58,8 @@ int main(int argv, char **argc) {
         print_folder(&settings);
     }
     else{
-        print_image(&settings);
+        set_res(&settings);
+        render_media(&settings);
     }
 
     return 0;
