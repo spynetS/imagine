@@ -194,8 +194,13 @@ void print_folder(Settings *settings){
 
         curr_frame = new_frame(file_path);
 
-        double scaler = get_scale_factor(curr_frame->width, curr_frame->height, settings->max_width,settings->max_height);
-        scale_frame(curr_frame,curr_frame->width*scaler, curr_frame->height*scaler);
+        if(settings->width == 0 && settings->height){
+            double scaler = get_scale_factor(curr_frame->width, curr_frame->height, settings->max_width,settings->max_height);
+            scale_frame(curr_frame,curr_frame->width*scaler, curr_frame->height*scaler);
+        }else{
+            double scaler = get_scale_factor(curr_frame->width, curr_frame->height, settings->width,settings->height);
+            scale_frame(curr_frame,curr_frame->width*scaler, curr_frame->height*scaler);
+        }
 
         draw_frame(prev_frame,curr_frame,settings->character_mode,settings->color);
         msleep(33);
@@ -239,9 +244,14 @@ void print_image (Settings *settings){
 
     Frame *frame = new_frame(settings->path);
     printf("Channels %d\n", frame->comp);
-    double scaler = get_scale_factor(frame->width, frame->height, settings->max_width,settings->max_height);
 
-    scale_frame(frame,frame->width*scaler, frame->height*scaler);
+    if(settings->width == 0 && settings->height==0){
+        double scaler = get_scale_factor(frame->width, frame->height, settings->max_width,settings->max_height);
+        scale_frame(frame,frame->width*scaler, frame->height*scaler);
+    }else{
+        double scaler = get_scale_factor(frame->width, frame->height, settings->width,settings->height);
+        scale_frame(frame,frame->width*scaler, frame->height*scaler);
+    }
 
     draw_frame(NULL,frame, settings->character_mode, settings->color);
     free_frame(frame);
