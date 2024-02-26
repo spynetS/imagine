@@ -13,8 +13,9 @@ out = imagine
 all: $(files)
 	$(cc) -o $(out) ./src/main.c $(files)
 
-img:
-	$(cc) -o $(out) single.c $(files) flagcer.c
+
+video: ./src/video.c $(files)
+	$(cc) -o video ./src/video.c $(files)
 
 run: all
 	./$(out)

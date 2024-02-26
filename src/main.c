@@ -1,6 +1,4 @@
-
 //Alfred Roos 2023
-
 #include <stdio.h>
 #include <stdlib.h>
 #include "imagine.h"
@@ -57,7 +55,8 @@ int main(int argv, char **argc) {
         print_folder(&settings);
     }
     else{
-        print_image(&settings);
+        set_res(&settings);
+        render_media(&settings);
     }
 
     return 0;

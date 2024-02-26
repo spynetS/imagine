@@ -29,7 +29,24 @@ Frame *new_frame(char *path){
 
     unsigned char *data = stbi_load(path, &(new_frame->width), &(new_frame->height), &(new_frame->comp), 0);
 
+    /* for(int i = 0; i < new_frame->width*new_frame->height*new_frame->comp;i++){ */
+    /*     msleep(200); */
+    /*     printf("%d,%d,%d\n",data[i],data[i+1],data[i+2]); */
+    /*     i++; */
+    /* } */
+    /* exit(1); */
     new_frame->pixel_data = data;
+
+    return new_frame;
+}
+Frame *new_frame_data(unsigned char *pixels, int width, int height,int comp){
+
+    Frame *new_frame  = malloc(sizeof(Frame));
+    new_frame->width  = width;
+    new_frame->height = height;
+    new_frame->comp   = comp;
+
+    new_frame->pixel_data = pixels;
 
     return new_frame;
 }
@@ -93,7 +110,6 @@ void draw_frame(Frame *prev_frame, Frame *curr_frame, int characters, int color)
             set_pixel(str, i, curr_frame,characters,color);
 
             setCharAt(x+offsetX,y+offsetY,str);
-
         }
         x += 2; // we add 2 becuase we print 2 chars
         if(x == curr_frame->width*2){
@@ -239,4 +255,88 @@ void print_image (Settings *settings){
 
     draw_frame(NULL,frame, settings->character_mode, settings->color);
     free_frame(frame);
+}
+
+int render_media (Settings *settings)
+{
+
+    int H = settings->height;
+    int W = settings->width;
+
+    char str[200];
+    int comp = 3;
+
+    sprintf(str,"ffmpeg -i %s -f image2pipe -vcodec rawvideo -pix_fmt rgb24 - -hide_banner -loglevel error",settings->path);
+    FILE *pipein = popen(str, "r");
+
+    // Open an input pipe from ffmpeg and an output pipe to a second instance of ffmpeg
+
+    if (!pipein) {
+        perror("popen");
+        return 1;
+    }
+
+    Frame *curr_frame = NULL;
+    Frame *prev_frame = NULL;
+
+    // Process video frames
+    while (1)
+    {
+
+        unsigned char *data = malloc(sizeof(unsigned char) * H*W*comp);
+        // Read a frame from the input pipe into the buffer
+        int count = fread(data, 1, H*W*comp, pipein);
+        // If we didn't get a frame of video, we're probably at the end
+        if (count != H*W*comp) break;
+
+
+        if(curr_frame != NULL){
+            if(prev_frame != NULL){
+                free_frame(prev_frame);
+            }
+            prev_frame = curr_frame;
+        }
+
+        curr_frame = new_frame_data(data,W,H,comp);
+
+        double scaler = get_scale_factor(curr_frame->width, curr_frame->height, settings->max_width,settings->max_height);
+
+        scale_frame(curr_frame,curr_frame->width*scaler, curr_frame->height*scaler);
+
+        draw_frame(prev_frame,curr_frame,settings->character_mode,settings->color);
+        msleep(33);
+    }
+    free_frame(curr_frame);
+
+    // Flush and close input pipe
+    fflush(pipein);
+    pclose(pipein);
+
+    return 0;
+}
+
+int set_res(Settings *settings){
+    char retrive_str[100];
+    sprintf(retrive_str,"ffprobe -v error -select_streams v -show_entries stream=width,height -of csv=p=0:s=x %s",settings->path);
+
+    FILE* res = popen(retrive_str,"r");
+    char res_str[100];
+    fread(res_str, sizeof(char), 10, res);
+
+    int w_len = 0;
+    char num_holder[5];
+    for(int i = 0; i < strlen(res_str); i++){
+        if(res_str[i] == 'x'){
+            num_holder[i] = '\0';
+            (settings->width) = atoi(num_holder);
+            w_len = i+1;
+            continue;
+        }
+        num_holder[i-w_len] = res_str[i];
+    }
+    (settings->height) = atoi(num_holder);
+
+    fflush(res);
+    pclose(res);
+    return 1;
 }
