@@ -1,6 +1,4 @@
-
 //Alfred Roos 2023
-
 #include <stdio.h>
 #include <stdlib.h>
 #include "imagine.h"
