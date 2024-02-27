@@ -30,11 +30,15 @@ void setRes(int av,char **ac){
     settings.width = atoi(ac[1]);
     settings.height = atoi(ac[2]);
 }
+void setHideCursor(int av, char **ac){
+    settings.hide_cursor = atoi(ac[1]);
+}
 
 int main(int argv, char **argc) {
 
     settings.character_mode = 3;
     settings.color = 1;
+    settings.hide_cursor = 1;
 
     settings.max_width = termWidth();
     settings.max_height = termHeight();
@@ -44,6 +48,7 @@ int main(int argv, char **argc) {
     addFlag("-t", "--type", "Sets the type to be outputed as\n 0 ascii, 1 assci more detail, 2 unicode block", setOption);
     addFlag("-c", "--color", "Sets the if we should output with color (escape code)\n 0 no color, 1 forground color", setColor);
     addFlag("-w", "--width", "Set the width ", setRes);
+    addFlag("--hide-cursor", "--hide-cursor", "1 to hide 0 to show (default 1)", setHideCursor);
 
     addHelp();
     parse(argv,argc);

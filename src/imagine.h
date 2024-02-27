@@ -14,6 +14,7 @@ typedef struct settings{
     int color;
     int width;
     int height;
+    int hide_cursor;
     double max_width;
     double max_height;
     char *path;

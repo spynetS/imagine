@@ -279,6 +279,8 @@ int render_media (Settings *settings)
     Frame *curr_frame = NULL;
     Frame *prev_frame = NULL;
 
+    if(settings->hide_cursor) puts(HIDE_CURSOR);
+
     // Process video frames
     while (1)
     {
@@ -312,6 +314,7 @@ int render_media (Settings *settings)
     fflush(pipein);
     pclose(pipein);
 
+    puts(SHOW_CURSOR);
     return 0;
 }
 
