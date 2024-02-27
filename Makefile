@@ -5,9 +5,9 @@
 # @version 0.1
 
 
-cc = gcc -Wall -lm -lprinter
+cc = gcc -Wall -lm
 
-files = ./src/imagine.c ./src/flagcer.c
+files = ./src/imagine.c ./src/flagcer.c ../printer/build/libprinter.a -lm
 out = imagine
 
 all: $(files)

@@ -1,6 +1,6 @@
 //Alfred Roos 2023
 #include <stdio.h>
-#include "printer.h"
+#include "../lib/printer.h"
 #include "imagine.h"
 #include <dirent.h>
 
