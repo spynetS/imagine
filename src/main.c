@@ -55,8 +55,6 @@ int main(int argv, char **argc) {
 
 
     if (isDirectory(settings.path)) {
-
-        printf("width %d\n", termWidth());
         print_folder(&settings);
     }
     else{

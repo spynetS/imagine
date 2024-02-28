@@ -3,6 +3,7 @@
 #include "../lib/printer.h"
 #include "imagine.h"
 #include <dirent.h>
+#include <time.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -260,13 +261,16 @@ void print_image (Settings *settings){
 int render_media (Settings *settings)
 {
 
-    int H = settings->height;
-    int W = settings->width;
 
     char str[200];
     int comp = 3;
 
-    sprintf(str,"ffmpeg -i %s -f image2pipe -vcodec rawvideo -pix_fmt rgb24 - -hide_banner -loglevel error",settings->path);
+    double scaler = get_scale_factor(settings->width, settings->height, settings->max_width,settings->max_height);
+
+    int H = settings->height * scaler;
+    int W = settings->width * scaler;
+
+    sprintf(str,"ffmpeg -i %s -f image2pipe -vcodec rawvideo -pix_fmt rgb24 -vf \"scale=%d:%d\" - -hide_banner -loglevel error",settings->path, (int)(W), (int)(H));
     FILE *pipein = popen(str, "r");
 
     // Open an input pipe from ffmpeg and an output pipe to a second instance of ffmpeg
@@ -284,10 +288,10 @@ int render_media (Settings *settings)
     // Process video frames
     while (1)
     {
-
         unsigned char *data = malloc(sizeof(unsigned char) * H*W*comp);
         // Read a frame from the input pipe into the buffer
         int count = fread(data, 1, H*W*comp, pipein);
+
         // If we didn't get a frame of video, we're probably at the end
         if (count != H*W*comp) break;
 
@@ -299,13 +303,11 @@ int render_media (Settings *settings)
             prev_frame = curr_frame;
         }
 
+
         curr_frame = new_frame_data(data,W,H,comp);
 
-        double scaler = get_scale_factor(curr_frame->width, curr_frame->height, settings->max_width,settings->max_height);
-
-        scale_frame(curr_frame,curr_frame->width*scaler, curr_frame->height*scaler);
-
         draw_frame(prev_frame,curr_frame,settings->character_mode,settings->color);
+
         msleep(33);
     }
     free_frame(curr_frame);
