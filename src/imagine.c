@@ -3,6 +3,7 @@
 #include "../lib/printer.h"
 #include "imagine.h"
 #include <dirent.h>
+#include <stdlib.h>
 #include <time.h>
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -297,13 +298,18 @@ int render_media (Settings *settings)
             break;
         }
 
+        clock_t t;
+        t = clock();
         if(play){
             unsigned char *data = malloc(sizeof(unsigned char) * H*W*comp);
             // Read a frame from the input pipe into the buffer
             int count = fread(data, 1, H*W*comp, pipein);
 
             // If we didn't get a frame of video, we're probably at the end
-            if (count != H*W*comp) break;
+            if (count != H*W*comp){
+                free(data);
+                break;
+            }
 
             if(curr_frame != NULL){
                 if(prev_frame != NULL){
@@ -316,13 +322,21 @@ int render_media (Settings *settings)
             draw_frame(prev_frame,curr_frame,settings->character_mode,settings->color);
 
             frame++;
-            setCursorPosition(0, H);
-            printf(WHITE"Time: %d; Q to quit, SPACE to pause",frame);
         }
 
-        msleep(33);
+        t = clock() - t;
+        double time_taken = ((double)t)/CLOCKS_PER_SEC * 1000; // in ms
+        double delay_for_fps = (1/settings->fps)*1000;
+
+        setCursorPosition(0, H);
+        printf(WHITE"Time: %d; FPS: %lf; Delay: %lf; Q to quit, SPACE to pause",frame,settings->fps,delay_for_fps-time_taken);
+
+        msleep(delay_for_fps-time_taken);
     }
-    free_frame(curr_frame);
+    if(curr_frame != NULL)
+        free_frame(curr_frame);
+    if(prev_frame != NULL)
+        free_frame(prev_frame);
 
     // Flush and close input pipe
     fflush(pipein);
@@ -330,6 +344,26 @@ int render_media (Settings *settings)
 
     puts(SHOW_CURSOR);
     return 0;
+}
+void set_fps(Settings* settings){
+
+    char retrive_str[350];
+    sprintf(retrive_str,"ffprobe -v error -select_streams v -of default=noprint_wrappers=1:nokey=1 -show_entries stream=avg_frame_rate %s",settings->path);
+
+    FILE* res = popen(retrive_str,"r");
+    char *res_str = malloc(sizeof(char) * 35);
+    fread(res_str, sizeof(char), 35, res);
+
+    char buf[10];
+    int index = 0;
+    while(res_str[index] != '/'){
+        buf[index] = res_str[index];
+        index++;
+    }
+    res_str+= index+1;
+    settings->fps = (double) atoi(buf)/atoi(res_str);
+    free(res_str-1-index);
+    pclose(res);
 }
 
 int set_res(Settings *settings){

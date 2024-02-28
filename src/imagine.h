@@ -15,6 +15,7 @@ typedef struct settings{
     int width;
     int height;
     int hide_cursor;
+    double fps;
     double max_width;
     double max_height;
     char *path;
@@ -37,6 +38,8 @@ int getBrightness(int red, int green, int blue);
 int load_frame(Frame *frame, int option, int color);
 
 void scale_frame(Frame *frame, int width, int height);
+
+void set_fps(Settings* settings);
 
 int set_res(Settings *settings);
 int render_media (Settings *settings);

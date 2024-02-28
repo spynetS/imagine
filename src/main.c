@@ -34,11 +34,14 @@ void setHideCursor(int av, char **ac){
     settings.hide_cursor = atoi(ac[1]);
 }
 
+
+
 int main(int argv, char **argc) {
 
     settings.character_mode = 3;
     settings.color = 1;
     settings.hide_cursor = 1;
+    settings.fps = 12;
 
     settings.max_width = termWidth();
     settings.max_height = termHeight();
@@ -59,6 +62,7 @@ int main(int argv, char **argc) {
     }
     else{
         set_res(&settings);
+        set_fps(&settings);
         render_media(&settings);
     }
 
