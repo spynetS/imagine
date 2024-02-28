@@ -260,8 +260,6 @@ void print_image (Settings *settings){
 
 int render_media (Settings *settings)
 {
-
-
     char str[200];
     int comp = 3;
 
@@ -285,28 +283,42 @@ int render_media (Settings *settings)
 
     if(settings->hide_cursor) puts(HIDE_CURSOR);
 
+    int play = 1;
+    int frame = 0;
     // Process video frames
     while (1)
     {
-        unsigned char *data = malloc(sizeof(unsigned char) * H*W*comp);
-        // Read a frame from the input pipe into the buffer
-        int count = fread(data, 1, H*W*comp, pipein);
-
-        // If we didn't get a frame of video, we're probably at the end
-        if (count != H*W*comp) break;
-
-
-        if(curr_frame != NULL){
-            if(prev_frame != NULL){
-                free_frame(prev_frame);
-            }
-            prev_frame = curr_frame;
+        //basic media contoll
+        char input = getKeyPressed();
+        if(input == ' '){
+           play = !play;
+        }
+        if(input == 'q'){
+            break;
         }
 
+        if(play){
+            unsigned char *data = malloc(sizeof(unsigned char) * H*W*comp);
+            // Read a frame from the input pipe into the buffer
+            int count = fread(data, 1, H*W*comp, pipein);
 
-        curr_frame = new_frame_data(data,W,H,comp);
+            // If we didn't get a frame of video, we're probably at the end
+            if (count != H*W*comp) break;
 
-        draw_frame(prev_frame,curr_frame,settings->character_mode,settings->color);
+            if(curr_frame != NULL){
+                if(prev_frame != NULL){
+                    free_frame(prev_frame);
+                }
+                prev_frame = curr_frame;
+            }
+
+            curr_frame = new_frame_data(data,W,H,comp);
+            draw_frame(prev_frame,curr_frame,settings->character_mode,settings->color);
+
+            frame++;
+            setCursorPosition(0, H);
+            printf(WHITE"Time: %d; Q to quit, SPACE to pause",frame);
+        }
 
         msleep(33);
     }
