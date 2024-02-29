@@ -6,6 +6,7 @@
 typedef struct frame{
     unsigned char* pixel_data;
     int width, height, comp;
+    char *output;
 
 } Frame;
 

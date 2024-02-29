@@ -100,9 +100,11 @@ void print_frame_as_string(Frame *prev_frame, Frame *curr_frame, int characters,
 
     for(int i = 0; i < curr_frame->width*curr_frame->height*curr_frame->comp; i +=curr_frame->comp){
         set_pixel(output, i, curr_frame,3,color);
-        offset += strlen(output);
-        output += strlen(output);
+        int o = strlen(output);
+        output += o;
+        offset += o;
     }
+    /* curr_frame->output = (output-offset); */
     printf("%s",output-offset);
 }
 
@@ -130,6 +132,18 @@ void draw_frame(Frame *prev_frame, Frame *curr_frame, int characters, int color)
             y++;
         }
     }
+}
+
+int changes(Frame *prev_frame, Frame *curr_frame, int characters, int color){
+    int changes = 0;
+    for(int i = 0; i < curr_frame->width*curr_frame->height*curr_frame->comp; i +=curr_frame->comp){
+        if(prev_frame == NULL || (curr_frame->pixel_data[i] != prev_frame->pixel_data[i] ||
+            curr_frame->pixel_data[i+1] != prev_frame->pixel_data[i+1] ||
+            curr_frame->pixel_data[i+2] != prev_frame->pixel_data[i+2])){
+            changes++;
+        }
+    }
+    return changes;
 }
 
 void print_frame(Frame* frame, int characters, int color){
@@ -332,17 +346,20 @@ int render_media (Settings *settings)
             clock_t t;
             t = clock();
 
-            if(settings->character_mode == 3)
-                draw_frame(prev_frame,curr_frame,settings->character_mode,settings->color);
-            if(settings->character_mode == 1)
+            int chan = changes(prev_frame, curr_frame, settings->character_mode, settings->color);
+            if(chan > curr_frame->height/3){
                 print_frame_as_string(prev_frame,curr_frame,settings->character_mode,settings->color);
+            }
+            else{
+                draw_frame(prev_frame,curr_frame,settings->character_mode,settings->color);
+            }
 
         t = clock() - t;
         double time_taken = ((double)t)/CLOCKS_PER_SEC * 1000; // in ms
         double delay_for_fps = (1/settings->fps)*1000;
 
         setCursorPosition(0,H+1);
-        printf(WHITE"Time: %d; FPS: %lf; Delay: %lf %lf; Q to quit, SPACE to pause",frame,settings->fps,delay_for_fps-time_taken,time_taken);
+        printf(WHITE"Time: %d; FPS: %lf; Delay: %lf %lf; changes %d; Q to quit, SPACE to pause",frame,settings->fps,delay_for_fps-time_taken,time_taken,chan/curr_frame->height);
         setCursorPosition(0,0);
 
             frame++;
