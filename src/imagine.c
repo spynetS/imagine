@@ -98,11 +98,22 @@ void print_frame_as_string(Frame *prev_frame, Frame *curr_frame, int characters,
     char *output = malloc(sizeof(char)*50*curr_frame->width*curr_frame->height);
     color = 1;
 
+    int x = 0;
+    int y = 0;
     for(int i = 0; i < curr_frame->width*curr_frame->height*curr_frame->comp; i +=curr_frame->comp){
         set_pixel(output, i, curr_frame,3,color);
         int o = strlen(output);
         output += o;
         offset += o;
+        x += 2; // we add 2 becuase we print 2 chars
+        if(x == curr_frame->width*2){
+            // add a new line when a row is done
+            sprintf(output,"\n");
+            output++;
+            offset++;
+            x = 0;
+            y++;
+        }
     }
     /* curr_frame->output = (output-offset); */
     printf("%s",output-offset);
@@ -347,7 +358,8 @@ int render_media (Settings *settings)
             t = clock();
 
             int chan = changes(prev_frame, curr_frame, settings->character_mode, settings->color);
-            if(chan > curr_frame->height/3){
+            // the changes are more then half the screen print the whole frame
+            if(chan/curr_frame->width > curr_frame->height/2){
                 print_frame_as_string(prev_frame,curr_frame,settings->character_mode,settings->color);
             }
             else{
@@ -358,9 +370,17 @@ int render_media (Settings *settings)
         double time_taken = ((double)t)/CLOCKS_PER_SEC * 1000; // in ms
         double delay_for_fps = (1/settings->fps)*1000;
 
-        setCursorPosition(0,H+1);
-        printf(WHITE"Time: %d; FPS: %lf; Delay: %lf %lf; changes %d; Q to quit, SPACE to pause",frame,settings->fps,delay_for_fps-time_taken,time_taken,chan/curr_frame->height);
-        setCursorPosition(0,0);
+        setCursorPosition(0, H+1);
+        printf(WHITE"Time: %d; FPS: %lf; Delay: %lf %lf; changes %d limit %d; COMP %d; Q to quit, SPACE to pause",
+               frame,
+               settings->fps,
+               delay_for_fps-time_taken,
+               time_taken,
+               chan/curr_frame->width,
+               curr_frame->height/2,
+               curr_frame->comp);
+
+        setCursorPosition(0, 0);
 
             frame++;
         msleep(delay_for_fps-time_taken);
