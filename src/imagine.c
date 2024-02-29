@@ -359,7 +359,7 @@ int render_media (Settings *settings)
 
             int chan = changes(prev_frame, curr_frame, settings->character_mode, settings->color);
             // the changes are more then half the screen print the whole frame
-            if(chan/curr_frame->width > curr_frame->height/2){
+            if(chan/curr_frame->width > curr_frame->height*2/3){
                 print_frame_as_string(prev_frame,curr_frame,settings->character_mode,settings->color);
             }
             else{
@@ -377,7 +377,7 @@ int render_media (Settings *settings)
                delay_for_fps-time_taken,
                time_taken,
                chan/curr_frame->width,
-               curr_frame->height/2,
+               curr_frame->height*2/3,
                curr_frame->comp);
 
         setCursorPosition(0, 0);
