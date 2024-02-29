@@ -115,8 +115,8 @@ void print_frame_as_string(Frame *prev_frame, Frame *curr_frame, int characters,
             y++;
         }
     }
-    /* curr_frame->output = (output-offset); */
     printf("%s",output-offset);
+    free(output-offset);
 }
 
 void draw_frame(Frame *prev_frame, Frame *curr_frame, int characters, int color){
