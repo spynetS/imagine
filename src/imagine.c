@@ -69,7 +69,7 @@ void set_pixel(char *str, int i, Frame* frame, int characters, int color){
     char color_str[28] = "";
     switch(color){
         case 1:
-            sprintf(color_str,"\033[38;2;%d;%d;%dm",MIN(frame->pixel_data[i]+contrast,255),MIN(frame->pixel_data[i+1]+contrast,255),MIN(frame->pixel_data[i+2]+contrast,255));
+            sprintf(color_str,"\033[38;2;%d;%d;%dm",frame->pixel_data[i],frame->pixel_data[i+1],frame->pixel_data[i+2]);
             break;
         case 2:
             sprintf(color_str,"\033[48;2;%d;%d;%dm",MIN(frame->pixel_data[i]+contrast,255),MIN(frame->pixel_data[i+1]+contrast,255),MIN(frame->pixel_data[i+2]+contrast,255));
@@ -93,6 +93,18 @@ void set_pixel(char *str, int i, Frame* frame, int characters, int color){
             break;
     }
 }
+void print_frame_as_string(Frame *prev_frame, Frame *curr_frame, int characters, int color){
+    int offset = 0;
+    char *output = malloc(sizeof(char)*50*curr_frame->width*curr_frame->height);
+    color = 1;
+
+    for(int i = 0; i < curr_frame->width*curr_frame->height*curr_frame->comp; i +=curr_frame->comp){
+        set_pixel(output, i, curr_frame,3,color);
+        offset += strlen(output);
+        output += strlen(output);
+    }
+    printf("%s",output-offset);
+}
 
 void draw_frame(Frame *prev_frame, Frame *curr_frame, int characters, int color){
 
@@ -102,7 +114,6 @@ void draw_frame(Frame *prev_frame, Frame *curr_frame, int characters, int color)
     int x = 0;
     int y = 0;
     if(characters == 3) color = 1;
-
     for(int i = 0; i < curr_frame->width*curr_frame->height*curr_frame->comp; i +=curr_frame->comp){
         if(prev_frame == NULL || (curr_frame->pixel_data[i] != prev_frame->pixel_data[i] ||
             curr_frame->pixel_data[i+1] != prev_frame->pixel_data[i+1] ||
@@ -239,7 +250,6 @@ double get_scale_factor(int w, int h,double wmax,double hmax){
     return scaler;
 }
 
-
 void print_image (Settings *settings){
 
     puts(settings->path);
@@ -261,6 +271,7 @@ void print_image (Settings *settings){
 
 int render_media (Settings *settings)
 {
+    system("clear");
     char str[200];
     int comp = 3;
 
@@ -298,8 +309,6 @@ int render_media (Settings *settings)
             break;
         }
 
-        clock_t t;
-        t = clock();
         if(play){
             unsigned char *data = malloc(sizeof(unsigned char) * H*W*comp);
             // Read a frame from the input pipe into the buffer
@@ -319,19 +328,28 @@ int render_media (Settings *settings)
             }
 
             curr_frame = new_frame_data(data,W,H,comp);
-            draw_frame(prev_frame,curr_frame,settings->character_mode,settings->color);
 
-            frame++;
-        }
+            clock_t t;
+            t = clock();
+
+            if(settings->character_mode == 3)
+                draw_frame(prev_frame,curr_frame,settings->character_mode,settings->color);
+            if(settings->character_mode == 1)
+                print_frame_as_string(prev_frame,curr_frame,settings->character_mode,settings->color);
 
         t = clock() - t;
         double time_taken = ((double)t)/CLOCKS_PER_SEC * 1000; // in ms
         double delay_for_fps = (1/settings->fps)*1000;
 
-        setCursorPosition(0, H);
-        printf(WHITE"Time: %d; FPS: %lf; Delay: %lf; Q to quit, SPACE to pause",frame,settings->fps,delay_for_fps-time_taken);
+        setCursorPosition(0,H+1);
+        printf(WHITE"Time: %d; FPS: %lf; Delay: %lf %lf; Q to quit, SPACE to pause",frame,settings->fps,delay_for_fps-time_taken,time_taken);
+        setCursorPosition(0,0);
 
+            frame++;
         msleep(delay_for_fps-time_taken);
+        }
+
+
     }
     if(curr_frame != NULL)
         free_frame(curr_frame);
