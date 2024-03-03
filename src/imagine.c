@@ -1,4 +1,4 @@
-//Alfred Roos 2023
+// Alfred Roos 2023
 #include <stdio.h>
 #include "../lib/printer.h"
 #include "imagine.h"
@@ -97,7 +97,6 @@ void print_frame_as_string(Frame *prev_frame, Frame *curr_frame, int characters,
     int offset = 0;
     char *output = malloc(sizeof(char)*50*curr_frame->width*curr_frame->height);
     color = 1;
-
     int x = 0;
     int y = 0;
     for(int i = 0; i < curr_frame->width*curr_frame->height*curr_frame->comp; i +=curr_frame->comp){
@@ -366,12 +365,12 @@ int render_media (Settings *settings)
                 draw_frame(prev_frame,curr_frame,settings->character_mode,settings->color);
             }
 
-        t = clock() - t;
-        double time_taken = ((double)t)/CLOCKS_PER_SEC * 1000; // in ms
-        double delay_for_fps = (1/settings->fps)*1000;
+            t = clock() - t;
+            double time_taken = ((double)t)/CLOCKS_PER_SEC * 1000; // in ms
+            double delay_for_fps = (1/settings->fps)*1000;
 
-        setCursorPosition(0, H+1);
-        printf(WHITE"Time: %d; FPS: %lf; Delay: %lf %lf; changes %d limit %d; COMP %d; Q to quit, SPACE to pause",
+            setCursorPosition(0, H+1);
+            printf(WHITE"Time: %d; FPS: %lf; Delay: %lf %lf; changes %d limit %d; COMP %d; Q to quit, SPACE to pause",
                frame,
                settings->fps,
                delay_for_fps-time_taken,
@@ -380,10 +379,10 @@ int render_media (Settings *settings)
                curr_frame->height*2/3,
                curr_frame->comp);
 
-        setCursorPosition(0, 0);
+            setCursorPosition(0, 0);
 
             frame++;
-        msleep(delay_for_fps-time_taken);
+            msleep(delay_for_fps-time_taken);
         }
 
 
@@ -392,6 +391,9 @@ int render_media (Settings *settings)
         free_frame(curr_frame);
     if(prev_frame != NULL)
         free_frame(prev_frame);
+
+    // set the cursor at the end
+    setCursorPosition(0, H+1);
 
     // Flush and close input pipe
     fflush(pipein);
@@ -408,14 +410,13 @@ void set_fps(Settings* settings){
     FILE* res = popen(retrive_str,"r");
     char *res_str = malloc(sizeof(char) * 35);
     fread(res_str, sizeof(char), 35, res);
-
     char buf[10];
     int index = 0;
     while(res_str[index] != '/'){
         buf[index] = res_str[index];
         index++;
     }
-    res_str+= index+1;
+    res_str += index+1;
     settings->fps = (double) atoi(buf)/atoi(res_str);
     free(res_str-1-index);
     pclose(res);
