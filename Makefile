@@ -8,7 +8,7 @@
 cc = gcc -Wall -lm
 
 files = ./src/imagine.c ./src/flagcer.c ../printer/build/libprinter.a -lm
-out = imagine
+out = imager
 
 all: $(files)
 	$(cc) -o $(out) ./src/main.c $(files)
