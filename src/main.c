@@ -11,14 +11,6 @@
 
 Settings settings;
 
-int isDirectory(const char *path) {
-    struct stat path_stat;
-    stat(path, &path_stat);
-
-    // Check if the path corresponds to a directory
-    return S_ISDIR(path_stat.st_mode);
-}
-
 void setOption(int av,char **ac){
     settings.character_mode = atoi(ac[1]);
 }
@@ -57,14 +49,9 @@ int main(int argv, char **argc) {
     parse(argv,argc);
 
 
-    if (isDirectory(settings.path)) {
-        print_folder(&settings);
-    }
-    else{
-        set_res(&settings);
-        set_fps(&settings);
-        render_media(&settings);
-    }
+    set_res(&settings);
+    set_fps(&settings);
+    render_media(&settings);
 
     return 0;
 }
