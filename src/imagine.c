@@ -162,7 +162,7 @@ int render_media (Settings *settings){
     int H = settings->height * scaler;
     int W = settings->width * scaler;
 
-    sprintf(str,"ffmpeg -i %s -f image2pipe -vcodec rawvideo -pix_fmt rgb24 -vf \"scale=%d:%d\" - -hide_banner -loglevel error",settings->path, (int)(W), (int)(H));
+    sprintf(str,"ffmpeg -i %s -f image2pipe -vcodec rawvideo -pix_fmt rgb24 -vf \"scale=%d:%d\" - -hide_banner -loglevel 8",settings->path, (int)(W), (int)(H));
     FILE *pipein = popen(str, "r");
 
     // Open an input pipe from ffmpeg and an output pipe to a second instance of ffmpeg
@@ -192,6 +192,7 @@ int render_media (Settings *settings){
         }
 
         if(play){
+            puts("ashehe");
             unsigned char *data = malloc(sizeof(unsigned char) * H*W*comp);
             // Read a frame from the input pipe into the buffer
             int count = fread(data, 1, H*W*comp, pipein);
@@ -264,11 +265,20 @@ int render_media (Settings *settings){
 void set_fps(Settings* settings){
 
     char retrive_str[350];
-    sprintf(retrive_str,"ffprobe -v error -select_streams v -of default=noprint_wrappers=1:nokey=1 -show_entries stream=avg_frame_rate %s",settings->path);
+    sprintf(retrive_str,"ffprobe -v 8 -select_streams v -of default=noprint_wrappers=1:nokey=1 -show_entries stream=avg_frame_rate %s",settings->path);
 
     FILE* res = popen(retrive_str,"r");
+
+    if (!res) {
+        perror("popen");
+        exit(1);
+    }
+
     char *res_str = malloc(sizeof(char) * 35);
     fread(res_str, sizeof(char), 35, res);
+    if(strcmp(res_str,"") == 0)
+        exit(1);
+
     char buf[10];
     int index = 0;
     while(res_str[index] != '/'){
@@ -283,11 +293,19 @@ void set_fps(Settings* settings){
 
 int set_res(Settings *settings){
     char retrive_str[100];
-    sprintf(retrive_str,"ffprobe -v error -select_streams v -show_entries stream=width,height -of csv=p=0:s=x %s",settings->path);
+    sprintf(retrive_str,"ffprobe -v 8 -select_streams v -show_entries stream=width,height -of csv=p=0:s=x %s",settings->path);
 
     FILE* res = popen(retrive_str,"r");
+
+    if (!res) {
+        perror("popen");
+        exit(1);
+    }
     char res_str[100];
     fread(res_str, sizeof(char), 10, res);
+
+    if(strcmp(res_str,"") == 0)
+        exit(1);
 
     int w_len = 0;
     char num_holder[5];
