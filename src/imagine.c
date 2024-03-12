@@ -74,11 +74,12 @@ void set_pixel(char *str, int i, Frame* frame, int characters, int color){
 void print_frame_as_string(Frame *prev_frame, Frame *curr_frame, int characters, int color){
     int offset = 0;
     char *output = malloc(sizeof(char)*50*curr_frame->width*curr_frame->height);
-    color = 1;
+    if(characters == 3) color = 1;
+
     int x = 0;
     int y = 0;
     for(int i = 0; i < curr_frame->width*curr_frame->height*curr_frame->comp; i +=curr_frame->comp){
-        set_pixel(output, i, curr_frame,3,color);
+        set_pixel(output, i, curr_frame,characters,color);
         int o = strlen(output);
         output += o;
         offset += o;
@@ -192,7 +193,6 @@ int render_media (Settings *settings){
         }
 
         if(play){
-            puts("ashehe");
             unsigned char *data = malloc(sizeof(unsigned char) * H*W*comp);
             // Read a frame from the input pipe into the buffer
             int count = fread(data, 1, H*W*comp, pipein);
