@@ -163,7 +163,7 @@ int render_media (Settings *settings){
     int H = settings->height * scaler;
     int W = settings->width * scaler;
 
-    sprintf(str,"ffmpeg -i %s -f image2pipe -vcodec rawvideo -pix_fmt rgb24 -vf \"scale=%d:%d\" - -hide_banner -loglevel 8",settings->path, (int)(W), (int)(H));
+    sprintf(str,"ffmpeg -i \"%s\" -f image2pipe -vcodec rawvideo -pix_fmt rgb24 -vf \"scale=%d:%d\" - -hide_banner -loglevel 8",settings->path, (int)(W), (int)(H));
     FILE *pipein = popen(str, "r");
 
     // Open an input pipe from ffmpeg and an output pipe to a second instance of ffmpeg
@@ -265,7 +265,7 @@ int render_media (Settings *settings){
 void set_fps(Settings* settings){
 
     char retrive_str[350];
-    sprintf(retrive_str,"ffprobe -v 8 -select_streams v -of default=noprint_wrappers=1:nokey=1 -show_entries stream=avg_frame_rate %s",settings->path);
+    sprintf(retrive_str,"ffprobe -v 8 -select_streams v -of default=noprint_wrappers=1:nokey=1 -show_entries stream=avg_frame_rate \"%s\"",settings->path);
 
     FILE* res = popen(retrive_str,"r");
 
