@@ -293,7 +293,7 @@ void set_fps(Settings* settings){
 
 int set_res(Settings *settings){
     char retrive_str[100];
-    sprintf(retrive_str,"ffprobe -v 8 -select_streams v -show_entries stream=width,height -of csv=p=0:s=x %s",settings->path);
+    sprintf(retrive_str,"ffprobe -v 8 -select_streams v -show_entries stream=width,height -of csv=p=0:s=x \"%s\"",settings->path);
 
     FILE* res = popen(retrive_str,"r");
 
