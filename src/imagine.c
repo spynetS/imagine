@@ -224,19 +224,26 @@ int render_media(Settings *settings) {
     // basic media contoll
     char input = getKeyPressed();
     if (input == ' ') {
+      /*
+      ** This killall seems very unsafe and
+      ** should really be rewritten
+      */
       if (settings->playing) {
         char tmp[200];
-        sprintf(tmp, "kill -CONT $(pgrep -f \"UID=my_unique_identifier\")");
+        sprintf(tmp, "killall -STOP ffplay");
+        system(tmp);
 
       } else {
         char tmp[200];
-        sprintf(tmp, "kill -CONT $(pgrep -f \"UID=my_unique_identifier\")");
+        sprintf(tmp, "killall -CONT ffplay");
         system(tmp);
       }
       settings->playing = !settings->playing;
     }
     if (input == 'q') {
-      puts("Ctrl-c for now :)");
+      char tmp[200];
+      sprintf(tmp, "killall ffplay");
+      system(tmp);
       break;
     }
 
