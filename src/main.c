@@ -1,57 +1,58 @@
-//Alfred Roos 2023
+// Alfred Roos 2023
+#include "../lib/printer.h"
+#include "flagser.h"
+#include "imagine.h"
+#include "string.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "imagine.h"
-#include "../lib/printer.h"
-#include "string.h"
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
-#include "flagser.h"
 
 Settings settings;
 
-void setOption(int av,char **ac){
-    settings.character_mode = atoi(ac[1]);
-}
-void setColor(int av,char **ac){
-    settings.color = atoi(ac[1]);
-}
+void setOption(int av, char **ac) { settings.character_mode = atoi(ac[1]); }
+void setColor(int av, char **ac) { settings.color = atoi(ac[1]); }
 
-void setRes(int av,char **ac){
-    settings.width = atoi(ac[1]);
-    settings.height = atoi(ac[2]);
+void setRes(int av, char **ac) {
+  settings.width = atoi(ac[1]);
+  settings.height = atoi(ac[2]);
 }
-void setHideCursor(int av, char **ac){
-    settings.hide_cursor = atoi(ac[1]);
-}
-
-
+void setHideCursor(int av, char **ac) { settings.hide_cursor = atoi(ac[1]); }
 
 int main(int argv, char **argc) {
 
-    settings.character_mode = 3;
-    settings.color = 1;
-    settings.hide_cursor = 1;
-    settings.fps = 12;
+  // system("sox ");
 
-    settings.max_width = termWidth();
-    settings.max_height = termHeight();
+  settings.character_mode = 3;
+  settings.color = 1;
+  settings.hide_cursor = 1;
+  settings.fps = 12;
+  settings.playing = 1;
 
-    settings.path = argc[argv-1];
+  settings.max_width = termWidth();
+  settings.max_height = termHeight();
 
-    addFlag("-t", "--type", "Sets the type to be outputed as\n 0 ascii, 1 assci more detail, 2 unicode block", setOption);
-    addFlag("-c", "--color", "Sets the if we should output with color (escape code)\n 0 no color, 1 forground color", setColor);
-    addFlag("-w", "--width", "Set the width ", setRes);
-    addFlag("--hide-cursor", "--hide-cursor", "1 to hide 0 to show (default 1)", setHideCursor);
+  settings.path = argc[argv - 1];
 
-    addHelp();
-    parse(argv,argc);
+  addFlag("-t", "--type",
+          "Sets the type to be outputed as\n 0 ascii, 1 assci more detail, 2 "
+          "unicode block",
+          setOption);
+  addFlag("-c", "--color",
+          "Sets the if we should output with color (escape code)\n 0 no color, "
+          "1 forground color",
+          setColor);
+  addFlag("-w", "--width", "Set the width ", setRes);
+  addFlag("--hide-cursor", "--hide-cursor", "1 to hide 0 to show (default 1)",
+          setHideCursor);
 
+  addHelp();
+  parse(argv, argc);
 
-    set_res(&settings);
-    set_fps(&settings);
-    render_media(&settings);
+  set_res(&settings);
+  set_fps(&settings);
+  render_media(&settings);
 
-    return 0;
+  return 0;
 }
