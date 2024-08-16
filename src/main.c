@@ -20,15 +20,18 @@ void setRes(int av, char **ac) {
 }
 void setHideCursor(int av, char **ac) { settings.hide_cursor = atoi(ac[1]); }
 
-int main(int argv, char **argc) {
+void setDebug(int av,char**ac){
+  settings.debug = 1;
+}
 
-  // system("sox ");
+int main(int argv, char **argc) {
 
   settings.character_mode = 3;
   settings.color = 1;
   settings.hide_cursor = 1;
   settings.fps = 12;
   settings.playing = 1;
+  settings.debug = 0;
 
   settings.max_width = termWidth();
   settings.max_height = termHeight();
@@ -46,6 +49,8 @@ int main(int argv, char **argc) {
   addFlag("-w", "--width", "Set the width ", setRes);
   addFlag("--hide-cursor", "--hide-cursor", "1 to hide 0 to show (default 1)",
           setHideCursor);
+
+  addFlag("-d","--debug","Shows debug information under the render", setDebug);
 
   addHelp();
   parse(argv, argc);

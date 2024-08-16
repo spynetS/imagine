@@ -11,6 +11,7 @@
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
+// This is the chars used sorted from low to high brightness
 char *ascii0 = " .isk@";
 char *ascii1 =
     " `.-':_,^=;><+!rc*/"
@@ -93,7 +94,6 @@ void print_frame_as_string(Frame *prev_frame, Frame *curr_frame, int characters,
     color = 1;
 
   int x = 0;
-  int y = 0;
   for (int i = 0; i < curr_frame->width * curr_frame->height * curr_frame->comp;
        i += curr_frame->comp) {
     set_pixel(output, i, curr_frame, characters, color);
@@ -107,7 +107,6 @@ void print_frame_as_string(Frame *prev_frame, Frame *curr_frame, int characters,
       output++;
       offset++;
       x = 0;
-      y++;
     }
   }
   printf("%s", output - offset);
@@ -223,6 +222,14 @@ int render_media(Settings *settings) {
   while (1) {
     // basic media contoll
     char input = getKeyPressed();
+    if (input == 'q') {
+      settings->playing = 1;
+      char tmp[200];
+      sprintf(tmp, "killall ffplay");
+      system(tmp);
+      pthread_exit(&thread_id);
+      break;
+    }
     if (input == ' ') {
       /*
       ** This killall seems very unsafe and
@@ -239,12 +246,6 @@ int render_media(Settings *settings) {
         system(tmp);
       }
       settings->playing = !settings->playing;
-    }
-    if (input == 'q') {
-      char tmp[200];
-      sprintf(tmp, "killall ffplay");
-      system(tmp);
-      break;
     }
 
     if (settings->playing) {
@@ -286,18 +287,20 @@ int render_media(Settings *settings) {
       double delay_for_fps = (1 / settings->fps) * 1000;
 
       setCursorPosition(0, H + 1);
-      printf(WHITE "Time: %d; FPS: %lf; Delay: %lf %lf; changes %d limit %d; "
-                   "COMP %d; Q to quit, SPACE to pause",
-             frame, settings->fps, delay_for_fps - time_taken, time_taken,
-             chan / curr_frame->width, curr_frame->height * 2 / 3,
-             curr_frame->comp);
-
+      if(settings->debug){
+        printf(WHITE "Time: %d; FPS: %lf; Delay: %lf %lf; changes %d limit %d; "
+                    "COMP %d; Q to quit, SPACE to pause",
+              frame, settings->fps, delay_for_fps - time_taken, time_taken,
+              chan / curr_frame->width, curr_frame->height * 2 / 3,
+              curr_frame->comp);
+      }
       setCursorPosition(0, 0);
 
       frame++;
       msleep(delay_for_fps - time_taken);
     }
   }
+  puts("out");
   if (curr_frame != NULL)
     free_frame(curr_frame);
   if (prev_frame != NULL)
@@ -311,6 +314,7 @@ int render_media(Settings *settings) {
   pclose(pipein);
 
   puts(SHOW_CURSOR);
+  exit(0);
   return 0;
 }
 

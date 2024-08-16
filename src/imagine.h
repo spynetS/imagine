@@ -19,6 +19,7 @@ typedef struct settings {
   double max_height;
   char *path;
   int playing;
+  int debug;
 
 } Settings;
 
