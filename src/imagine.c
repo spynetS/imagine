@@ -238,11 +238,16 @@ int render_media(Settings *settings) {
       if (settings->playing) {
         char tmp[200];
         sprintf(tmp, "killall -STOP ffplay");
+        setCursorPosition(W/2,H/2);
+        printf(WHITE"PAUSED");
         system(tmp);
 
       } else {
         char tmp[200];
         sprintf(tmp, "killall -CONT ffplay");
+        setCursorPosition(0, 1);
+        print_frame_as_string(prev_frame, curr_frame, settings->character_mode,
+                              settings->color);
         system(tmp);
       }
       settings->playing = !settings->playing;
