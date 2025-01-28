@@ -182,7 +182,7 @@ void *play_sound(void *vargp) {
   Settings *settings = (Settings *)vargp;
   if(settings->mute == 0){
     sprintf(str, "ffplay -nodisp -autoexit '%s' > /dev/null 2>&1 &",
-          settings->path);
+            settings->path);
   }
 
   system(str);
@@ -241,10 +241,10 @@ int render_media(Settings *settings) {
         char tmp[200];
         if(!settings->mute){
           sprintf(tmp, "killall -STOP ffplay");
-          setCursorPosition(W/2,H/2);
-          printf(WHITE"PAUSED");
           system(tmp);
         }
+        setCursorPosition(W/2,H/2);
+        printf(WHITE"PAUSED");
       }
       else {
         char tmp[200];
@@ -252,6 +252,10 @@ int render_media(Settings *settings) {
           sprintf(tmp, "killall -CONT ffplay");
           system(tmp);
         }
+        setCursorPosition(0, 1);
+        print_frame_as_string(prev_frame, curr_frame, settings->character_mode,
+                            settings->color);
+
       }
       settings->playing = !settings->playing;
     }
@@ -259,11 +263,9 @@ int render_media(Settings *settings) {
       char tmp[200];
       if(!settings->mute){
         sprintf(tmp, "killall ffplay");
-        setCursorPosition(0, 1);
-        print_frame_as_string(prev_frame, curr_frame, settings->character_mode,
-                              settings->color);
         system(tmp);
       }
+
       break;
     }
 
