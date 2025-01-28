@@ -232,20 +232,26 @@ int render_media(Settings *settings) {
       */
       if (settings->playing) {
         char tmp[200];
-        sprintf(tmp, "killall -STOP ffplay");
-        system(tmp);
-
-      } else {
+        if(!settings->mute){
+          sprintf(tmp, "killall -STOP ffplay");
+          system(tmp);
+        }
+      }
+      else {
         char tmp[200];
-        sprintf(tmp, "killall -CONT ffplay");
-        system(tmp);
+        if(!settings->mute){
+          sprintf(tmp, "killall -CONT ffplay");
+          system(tmp);
+        }
       }
       settings->playing = !settings->playing;
     }
     if (input == 'q') {
       char tmp[200];
-      sprintf(tmp, "killall ffplay");
-      system(tmp);
+      if(!settings->mute){
+        sprintf(tmp, "killall ffplay");
+        system(tmp);
+      }
       break;
     }
 
