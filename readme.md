@@ -20,5 +20,8 @@ Imagine uses ffmpeg and ffplay for media extraction and uses pipeing and system 
 - `-c` `--color` - specifies the color mode, 0 no color, (1 forground), 2 background
 
 
-### Athor
+- [ ] Mute flag
+- [ ] If video and sound is not synced if video is delayed
+
+### Author
 2023 Alfred Roos
