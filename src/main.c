@@ -23,9 +23,13 @@ void setMute(int av, char **ac) {
 }
 void setHideCursor(int av, char **ac) { settings.hide_cursor = atoi(ac[1]); }
 
+void setDebug(int av,char**ac){
+  settings.debug = 1;
+}
+
+
 int main(int argc, char **argv) {
 
-  // system("sox ");
 
   settings.character_mode = 3;
   settings.color = 1;
@@ -33,6 +37,7 @@ int main(int argc, char **argv) {
   settings.fps = 12;
   settings.playing = 1;
   settings.mute = 0;
+  settings.debug = 0;
 
   settings.max_width = termWidth();
   settings.max_height = termHeight();
@@ -50,8 +55,12 @@ int main(int argc, char **argv) {
   addFlag("--hide-cursor", "--hide-cursor", "1 to hide 0 to show (default 1)",
           setHideCursor);
 
+
   addFlag("-m", "--mute", "1 to mute 0 to not mute (default 0)",
          setMute);
+
+  addFlag("-d","--debug","Shows debug information under the render", setDebug);
+
 
   addHelp();
   parse(argc, argv);

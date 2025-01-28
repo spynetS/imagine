@@ -20,6 +20,7 @@ typedef struct settings {
   char *path;
   int playing;
   int mute;
+  int debug;
 } Settings;
 
 Frame *new_frame_data(unsigned char *pixels, int width, int height, int comp);
