@@ -7,23 +7,25 @@
 
 cc = gcc -Wall -lm
 
-files = ./src/imagine.c ./src/flagcer.c ./lib/libprinter.a -lm
-out = imagine
+out_folder = ./bin
+out = $(out_folder)/imagine
 
-all: $(files)
-	$(cc) -o $(out) ./src/main.c $(files)
+src = $(wildcard src/*.c)
+
+objects = $(prefix bin ) $(notdir $(src:.c=.o))
+bin_objects = $(addprefix bin/, $(objects))
 
 
-video: ./src/video.c $(files)
-	$(cc) -o video ./src/video.c $(files)
+bin/%.o: src/%.c
+	$(cc) $(CFLAGS) -c $< -o $@
 
-run: all
+$(out): $(bin_objects)
+	$(cc) $(bin_objects) ./lib/libprinter.a -o $(out)
+
+run: $(out)
 	./$(out)
 
-val: all
-	valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --read-inline-info=yes -s ./$(out)
-
 clean:
-	rm -rf ./$(out)
+	rm -rf $(out_folder)/*
 
 # end
