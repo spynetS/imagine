@@ -19,7 +19,7 @@ typedef struct settings {
   double max_height;
   char *path;
   int playing;
-
+  int mute;
 } Settings;
 
 Frame *new_frame_data(unsigned char *pixels, int width, int height, int comp);

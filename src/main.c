@@ -18,9 +18,12 @@ void setRes(int av, char **ac) {
   settings.width = atoi(ac[1]);
   settings.height = atoi(ac[2]);
 }
+void setMute(int av, char **ac) {
+  settings.mute = atoi(ac[1]);
+}
 void setHideCursor(int av, char **ac) { settings.hide_cursor = atoi(ac[1]); }
 
-int main(int argv, char **argc) {
+int main(int argc, char **argv) {
 
   // system("sox ");
 
@@ -29,6 +32,7 @@ int main(int argv, char **argc) {
   settings.hide_cursor = 1;
   settings.fps = 12;
   settings.playing = 1;
+  settings.mute = 0;
 
   settings.max_width = termWidth();
   settings.max_height = termHeight();
@@ -36,19 +40,25 @@ int main(int argv, char **argc) {
   settings.path = argc[argv - 1];
 
   addFlag("-t", "--type",
-          "Sets the type to be outputed as\n 0 ascii, 1 assci more detail, 2 "
-          "unicode block",
+          "Sets the type to be outputed as 0 ascii, 1 assci more detail, 2 unicode block",
           setOption);
   addFlag("-c", "--color",
-          "Sets the if we should output with color (escape code)\n 0 no color, "
-          "1 forground color",
+          "Sets the if we should output with color (escape code) 0 no color, 1 forground color",
           setColor);
   addFlag("-w", "--width", "Set the width ", setRes);
+
   addFlag("--hide-cursor", "--hide-cursor", "1 to hide 0 to show (default 1)",
           setHideCursor);
 
+  addFlag("-m", "--mute", "1 to mute 0 to not mute (default 0)",
+         setMute);
+
   addHelp();
-  parse(argv, argc);
+  parse(argc, argv);
+
+  if(argc == 2 && strcmp(argv[1],"-h")==0){
+    exit(1);
+  }
 
   set_res(&settings);
   set_fps(&settings);

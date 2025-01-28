@@ -181,8 +181,10 @@ void *play_sound(void *vargp) {
   setenv("UID", uid, 1);
 
   Settings *settings = (Settings *)vargp;
-  sprintf(str, "ffplay -nodisp -autoexit '%s' > /dev/null 2>&1 &",
+  if(settings->mute == 0){
+    sprintf(str, "ffplay -nodisp -autoexit '%s' > /dev/null 2>&1 &",
           settings->path);
+  }
 
   system(str);
   return NULL;
