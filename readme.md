@@ -10,17 +10,23 @@ Imagine uses ffmpeg and ffplay for media extraction and uses pipeing and system 
 ![Screen3](https://github.com/spynetS/imagine/blob/main/Images/Screen0.jpg)
 
 ## Installation
-### There is a aur package
-`yay -S imagine-term-git`
+### There is a aur package for arch distros
+```
+yay -S imagine-term-git
+```
 ### Manual
 Just clone and make
-```git clone https://github.com/spynetS/imagine```
-```cd imagine```
-```make```
-to install globaly
-```sudo ln -s $PWD/bin/imagine /usr/local/bin```
 
-`
+
+```
+git clone https://github.com/spynetS/imagine
+cd imagine
+make
+```
+to install globaly
+```
+sudo ln -s $PWD/bin/imagine /usr/local/bin
+```
 
 ## Usage 
 `imagine [options] path`
