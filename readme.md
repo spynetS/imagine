@@ -14,11 +14,11 @@ Imagine uses ffmpeg and ffplay for media extraction and uses pipeing and system 
 `yay -S imagine-term-git`
 ### Manual
 Just clone and make
-`git clone https://github.com/spynetS/imagine`
-`cd imagine`
-`make`
+```git clone https://github.com/spynetS/imagine```
+```cd imagine```
+```make```
 to install globaly
-`sudo ln -s $PWD/bin/imagine /usr/local/bin`
+```sudo ln -s $PWD/bin/imagine /usr/local/bin```
 
 `
 
