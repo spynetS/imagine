@@ -17,6 +17,7 @@ bin_objects = $(addprefix bin/, $(objects))
 
 
 bin/%.o: src/%.c
+	if [ -d "bin" ]; then echo "Dir exists"; else mkdir bin; fi
 	$(cc) $(CFLAGS) -c $< -o $@
 
 $(out): $(bin_objects)
