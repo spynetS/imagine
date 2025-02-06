@@ -19,7 +19,7 @@ Just clone and make
 
 
 ```
-git clone https://github.com/spynetS/imagine
+git clone --depth 1 https://github.com/spynetS/imagine
 cd imagine
 make
 ```
