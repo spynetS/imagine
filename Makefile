@@ -6,6 +6,7 @@
 
 
 cc = gcc -Wall -lm
+CFLAGS=-march=x86-64 -mtune=generic -O2 -pipe -fno-plt -D_FORTIFY_SOURCE=2
 
 out_folder = ./bin
 out = $(out_folder)/imagine

@@ -49,26 +49,27 @@ void set_pixel(char *str, int i, Frame *frame, int characters, int color) {
   char color_str[28] = "";
   switch (color) {
   case 1:
-    sprintf(color_str, "\033[38;2;%d;%d;%dm", frame->pixel_data[i],
+    snprintf(color_str,sizeof(color_str), "\033[38;2;%d;%d;%dm", frame->pixel_data[i],
             frame->pixel_data[i + 1], frame->pixel_data[i + 2]);
     break;
   case 2:
-    sprintf(color_str, "\033[48;2;%d;%d;%dm",
+    snprintf(color_str,sizeof(color_str), "\033[48;2;%d;%d;%dm",
             MIN(frame->pixel_data[i] + contrast, 255),
             MIN(frame->pixel_data[i + 1] + contrast, 255),
             MIN(frame->pixel_data[i + 2] + contrast, 255));
     break;
   }
   int index = 0;
+  size_t str_size = sizeof(char) * 50 * frame->width * frame->height;
   switch (characters) {
   case 0:
-    sprintf(str, "%s%c ", color_str,
+    snprintf(str,str_size, "%s%c ", color_str,
             ascii0[(brightness(frame->pixel_data[i], frame->pixel_data[i + 1],
                                frame->pixel_data[i + 2]) *
                     (strlen(ascii0) - 1) / 255)]);
     break;
   case 1:
-    sprintf(str, "%s%c ", color_str,
+    snprintf(str,str_size, "%s%c ", color_str,
             ascii1[(brightness(frame->pixel_data[i], frame->pixel_data[i + 1],
                                frame->pixel_data[i + 2]) *
                     (strlen(ascii1) - 1) / 255)]);
@@ -77,10 +78,10 @@ void set_pixel(char *str, int i, Frame *frame, int characters, int color) {
     index = (int)(brightness(frame->pixel_data[i], frame->pixel_data[i + 1],
                              frame->pixel_data[i + 2]) *
                   (unicode - 1) / 255);
-    sprintf(str, "%s%s%s", color_str, unicode1[index], unicode1[index]);
+    snprintf(str,str_size, "%s%s%s", color_str, unicode1[index], unicode1[index]);
     break;
   case 3:
-    sprintf(str, "%s██", color_str);
+    snprintf(str,str_size, "%s██", color_str);
     break;
   }
 }
@@ -88,8 +89,9 @@ void set_pixel(char *str, int i, Frame *frame, int characters, int color) {
 void print_frame_as_string(Frame *prev_frame, Frame *curr_frame, int characters,
                            int color) {
   int offset = 0;
+  size_t output_size = sizeof(char) * 50 * curr_frame->width * curr_frame->height;
   char *output =
-      malloc(sizeof(char) * 50 * curr_frame->width * curr_frame->height);
+      malloc(output_size);
   if (characters == 3)
     color = 1;
 
@@ -103,7 +105,7 @@ void print_frame_as_string(Frame *prev_frame, Frame *curr_frame, int characters,
     x += 2; // we add 2 becuase we print 2 chars
     if (x == curr_frame->width * 2) {
       // add a new line when a row is done
-      sprintf(output, "\n");
+      snprintf(output,output_size, "\n");
       output++;
       offset++;
       x = 0;
@@ -181,7 +183,7 @@ void *play_sound(void *vargp) {
 
   Settings *settings = (Settings *)vargp;
   if(settings->mute == 0){
-    sprintf(str, "ffplay -nodisp -autoexit '%s' > /dev/null 2>&1 &",
+    snprintf(str,sizeof(str), "ffplay -nodisp -autoexit '%s' > /dev/null 2>&1 &",
             settings->path);
   }
 
@@ -200,7 +202,7 @@ int render_media(Settings *settings) {
   int H = settings->height * scaler;
   int W = settings->width * scaler;
 
-  sprintf(str,
+  snprintf(str,sizeof(str),
           "ffmpeg -i \"%s\" -f image2pipe -vcodec rawvideo -pix_fmt rgb24 -vf "
           "\"scale=%d:%d\" - -hide_banner -loglevel 8",
           settings->path, (int)(W), (int)(H));
@@ -227,7 +229,7 @@ int render_media(Settings *settings) {
     if (input == 'q') {
       settings->playing = 1;
       char tmp[200];
-      sprintf(tmp, "killall ffplay");
+      snprintf(tmp,sizeof(tmp), "killall ffplay");
       system(tmp);
       pthread_exit(&thread_id);
       break;
@@ -240,7 +242,7 @@ int render_media(Settings *settings) {
       if (settings->playing) {
         char tmp[200];
         if(!settings->mute){
-          sprintf(tmp, "killall -STOP ffplay");
+          snprintf(tmp,sizeof(tmp), "killall -STOP ffplay");
           system(tmp);
         }
         setCursorPosition(W/2,H/2);
@@ -249,7 +251,7 @@ int render_media(Settings *settings) {
       else {
         char tmp[200];
         if(!settings->mute){
-          sprintf(tmp, "killall -CONT ffplay");
+          snprintf(tmp,sizeof(tmp), "killall -CONT ffplay");
           system(tmp);
         }
         setCursorPosition(0, 1);
@@ -262,7 +264,7 @@ int render_media(Settings *settings) {
     if (input == 'q') {
       char tmp[200];
       if(!settings->mute){
-        sprintf(tmp, "killall ffplay");
+        snprintf(tmp,sizeof(tmp), "killall ffplay");
         system(tmp);
       }
 
@@ -342,10 +344,11 @@ int render_media(Settings *settings) {
 void set_fps(Settings *settings) {
 
   char retrive_str[350];
-  sprintf(
+  snprintf(
       retrive_str,
+      sizeof(retrive_str),
       "ffprobe -v 8 -select_streams v -of default=noprint_wrappers=1:nokey=1 "
-      "-show_entries stream=avg_frame_rate \"%s\"",
+      "-show_entries stream=avg_frame_rate '%s'",
       settings->path);
 
   FILE *res = popen(retrive_str, "r");
@@ -373,12 +376,15 @@ void set_fps(Settings *settings) {
 }
 
 int set_res(Settings *settings) {
-  char retrive_str[100];
-  sprintf(retrive_str,
+
+  char retrive_str[256];
+  snprintf(retrive_str,
+           sizeof(retrive_str),
           "ffprobe -v 8 -select_streams v -show_entries stream=width,height "
           "-of csv=p=0:s=x \"%s\"",
           settings->path);
 
+  printf("%s\n",retrive_str);
   FILE *res = popen(retrive_str, "r");
 
   if (!res) {
