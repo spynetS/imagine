@@ -111,7 +111,6 @@ void print_frame_as_string(Frame *prev_frame, Frame *curr_frame, int characters,
       x = 0;
     }
   }
-  printf("%s", output - offset);
   free(output - offset);
 }
 
@@ -384,7 +383,6 @@ int set_res(Settings *settings) {
           "-of csv=p=0:s=x \"%s\"",
           settings->path);
 
-  printf("%s\n",retrive_str);
   FILE *res = popen(retrive_str, "r");
 
   if (!res) {
