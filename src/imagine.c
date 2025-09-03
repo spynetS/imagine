@@ -323,7 +323,7 @@ int render_media(Settings *settings) {
       msleep(delay_for_fps - time_taken);
     }
   }
-  puts("out");
+
   if (curr_frame != NULL)
     free_frame(curr_frame);
   if (prev_frame != NULL)
@@ -384,7 +384,7 @@ int set_res(Settings *settings) {
           "-of csv=p=0:s=x \"%s\"",
           settings->path);
 
-  printf("%s\n",retrive_str);
+  //printf("%s\n",retrive_str);
   FILE *res = popen(retrive_str, "r");
 
   if (!res) {
