@@ -30,7 +30,6 @@ void setDebug(int av,char**ac){
 
 int main(int argc, char **argv) {
 
-
   settings.character_mode = 3;
   settings.color = 1;
   settings.hide_cursor = 1;
@@ -38,6 +37,8 @@ int main(int argc, char **argv) {
   settings.playing = 1;
   settings.mute = 0;
   settings.debug = 0;
+	settings.width = 0;
+	settings.height = 0;
 
   settings.max_width = termWidth();
   settings.max_height = termHeight();
@@ -61,15 +62,17 @@ int main(int argc, char **argv) {
 
   addFlag("-d","--debug","Shows debug information under the render", setDebug);
 
-
   addHelp();
-  parse(argc, argv);
+
+
+	parse(argc, argv);
 
   if(argc == 2 && strcmp(argv[1],"-h")==0){
     exit(1);
   }
-
-  set_res(&settings);
+	// if res isnt set set it with fprobe
+	if(settings.width == 0 || settings.height == 0)
+		set_res(&settings);
   set_fps(&settings);
   render_media(&settings);
 

@@ -342,7 +342,7 @@ int render_media(Settings *settings) {
 }
 
 void set_fps(Settings *settings) {
-
+	// when run it will return a string, example 25/1
   char retrive_str[350];
   snprintf(
       retrive_str,
@@ -358,33 +358,34 @@ void set_fps(Settings *settings) {
     exit(1);
   }
 
-  char *res_str = malloc(sizeof(char) * 35);
-  fread(res_str, sizeof(char), 35, res);
-  if (strcmp(res_str, "") == 0)
+  char *fps_str = malloc(sizeof(char) * 35);
+  fread(fps_str, sizeof(char), 35, res);
+  if (strcmp(fps_str, "") == 0)
     exit(1);
 
+	// we add the chars to a buffer untill we find a / then cancel
   char buf[10];
   int index = 0;
-  while (res_str[index] != '/') {
-    buf[index] = res_str[index];
+  while (fps_str[index] != '/') {
+    buf[index] = fps_str[index];
     index++;
   }
-  res_str += index + 1;
-  settings->fps = (double)atoi(buf) / atoi(res_str);
-  free(res_str - 1 - index);
+  fps_str += index + 1;
+  settings->fps = (double)atoi(buf) / atoi(fps_str);
+  free(fps_str - 1 - index);
   pclose(res);
 }
 
 int set_res(Settings *settings) {
 
   char retrive_str[256];
+	// when run it will return a string of [width]x[height]
   snprintf(retrive_str,
            sizeof(retrive_str),
           "ffprobe -v 8 -select_streams v -show_entries stream=width,height "
           "-of csv=p=0:s=x \"%s\"",
           settings->path);
 
-  //printf("%s\n",retrive_str);
   FILE *res = popen(retrive_str, "r");
 
   if (!res) {
@@ -397,6 +398,7 @@ int set_res(Settings *settings) {
   if (strcmp(res_str, "") == 0)
     exit(1);
 
+	// we parse the string and save the width and height based on where the x is
   int w_len = 0;
   char num_holder[5];
   for (int i = 0; i < strlen(res_str); i++) {
