@@ -17,6 +17,8 @@ void setColor(int av, char **ac) { settings.color = atoi(ac[1]); }
 void setRes(int av, char **ac) {
   settings.width = atoi(ac[1]);
   settings.height = atoi(ac[2]);
+	settings.max_width = atoi(ac[1]);
+  settings.max_height = atoi(ac[2]);
 }
 void setMute(int av, char **ac) {
   settings.mute = atoi(ac[1]);

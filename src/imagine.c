@@ -164,6 +164,7 @@ void print_frame(Frame *frame, int characters, int color) {
   draw_frame(NULL, frame, characters, color);
 }
 
+// returns the scaling factor based on the w and h when the max is wmax, hmax 
 double get_scale_factor(int w, int h, double wmax, double hmax) {
 
   if (wmax == -1 || hmax == -1)
@@ -175,6 +176,7 @@ double get_scale_factor(int w, int h, double wmax, double hmax) {
   }
   return scaler;
 }
+
 void *play_sound(void *vargp) {
   char str[200];
 
