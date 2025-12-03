@@ -1,0 +1,3 @@
+[submodule "lib/printer"]
+	path = lib/printer
+	url = https://github.com/spynets/printer

@@ -1,5 +1,5 @@
 // Alfred Roos 2023
-#include "../lib/printer.h"
+#include "../lib/printer/src/printer.h"
 #include "flagser.h"
 #include "imagine.h"
 #include "string.h"

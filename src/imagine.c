@@ -1,6 +1,6 @@
 // Alfred Roos 2023
 #include "imagine.h"
-#include "../lib/printer.h"
+#include "../lib/printer/src/printer.h"
 #include <dirent.h>
 #include <pthread.h>
 #include <stdio.h>
