@@ -9,7 +9,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#define RENDER=1 // at 0 we will not render (for debug reasons)
 
 Settings settings;
 

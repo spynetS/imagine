@@ -8,6 +8,8 @@
 #include <string.h>
 #include <time.h>
 
+#define RENDER 1 // at 0 we will not render (for debug reasons)
+
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
