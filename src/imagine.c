@@ -189,12 +189,18 @@ void *play_sound(void *vargp) {
             settings->path);
   }
 
-  system(str);
+	int ret = system(str);
+	if (ret == -1) {
+    perror("system");
+	}
+
   return NULL;
 }
 
 int render_media(Settings *settings) {
-  system("clear");
+  if(system("clear") == -1){
+		perror("system");
+	}
   char str[200];
   int comp = 3;
 
@@ -232,7 +238,9 @@ int render_media(Settings *settings) {
       settings->playing = 1;
       char tmp[200];
       snprintf(tmp,sizeof(tmp), "killall ffplay");
-      system(tmp);
+      if(system(tmp)==-1){
+				perror("system");
+			 }
       pthread_exit(&thread_id);
       break;
     }
@@ -245,7 +253,9 @@ int render_media(Settings *settings) {
         char tmp[200];
         if(!settings->mute){
           snprintf(tmp,sizeof(tmp), "killall -STOP ffplay");
-          system(tmp);
+					if(system(tmp)==-1){
+						perror("system");
+					}
         }
         setCursorPosition(W/2,H/2);
         printf(WHITE"PAUSED");
@@ -254,7 +264,9 @@ int render_media(Settings *settings) {
         char tmp[200];
         if(!settings->mute){
           snprintf(tmp,sizeof(tmp), "killall -CONT ffplay");
-          system(tmp);
+					if(system(tmp)==-1){
+						perror("system");
+					}
         }
         setCursorPosition(0, 1);
         print_frame_as_string(prev_frame, curr_frame, settings->character_mode,
@@ -267,7 +279,9 @@ int render_media(Settings *settings) {
       char tmp[200];
       if(!settings->mute){
         snprintf(tmp,sizeof(tmp), "killall ffplay");
-        system(tmp);
+				if(system(tmp)==-1){
+					perror("system");
+				}
       }
 
       break;
@@ -361,7 +375,10 @@ void set_fps(Settings *settings) {
   }
 
   char *fps_str = malloc(sizeof(char) * 35);
-  fread(fps_str, sizeof(char), 35, res);
+  if(fread(fps_str, sizeof(char), 35, res) == 0){
+		perror("fps read");
+		exit(1);
+	}
   if (strcmp(fps_str, "") == 0)
     exit(1);
 
@@ -395,7 +412,10 @@ int set_res(Settings *settings) {
     exit(1);
   }
   char res_str[100];
-  fread(res_str, sizeof(char), 10, res);
+  if(fread(res_str, sizeof(char), 10, res) == 0){
+		perror("res fread");
+		exit(1);
+	}
 
   if (strcmp(res_str, "") == 0)
     exit(1);
