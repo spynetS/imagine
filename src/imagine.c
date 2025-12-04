@@ -98,7 +98,9 @@ void print_frame_as_string(Frame *prev_frame, Frame *curr_frame, int characters,
   int x = 0;
   for (int i = 0; i < curr_frame->width * curr_frame->height * curr_frame->comp;
        i += curr_frame->comp) {
+
     set_pixel(output, i, curr_frame, characters, color);
+
     int o = strlen(output);
     output += o;
     offset += o;
@@ -132,9 +134,8 @@ void draw_frame(Frame *prev_frame, Frame *curr_frame, int characters,
          curr_frame->pixel_data[i + 1] != prev_frame->pixel_data[i + 1] ||
          curr_frame->pixel_data[i + 2] != prev_frame->pixel_data[i + 2])) {
 
-      char str[50];
+      char str[50];		 
       set_pixel(str, i, curr_frame, characters, color);
-
       setCharAt(x + offsetX, y + offsetY, str);
     }
     x += 2; // we add 2 becuase we print 2 chars
@@ -198,9 +199,11 @@ void *play_sound(void *vargp) {
 }
 
 int render_media(Settings *settings) {
+#if RENDER	
   if(system("clear") == -1){
 		perror("system");
 	}
+#endif
   char str[200];
   int comp = 3;
 
@@ -214,9 +217,11 @@ int render_media(Settings *settings) {
           "ffmpeg -i \"%s\" -f image2pipe -vcodec rawvideo -pix_fmt rgb24 -vf "
           "\"scale=%d:%d\" - -hide_banner -loglevel 8",
           settings->path, (int)(W), (int)(H));
+
   FILE *pipein = popen(str, "r");
   pthread_t thread_id;
-  pthread_create(&thread_id, NULL, play_sound, settings);
+	// valgrind reports memory leak but it shouldnt be
+  pthread_create(&thread_id, NULL, play_sound, settings); 
 
   if (!pipein) {
     perror("popen");
@@ -294,7 +299,7 @@ int render_media(Settings *settings) {
 
       // If we didn't get a frame of video, we're probably at the end
       if (count != H * W * comp) {
-        free(data);
+        free(data); // we free the new data collected
         break;
       }
 
@@ -313,14 +318,16 @@ int render_media(Settings *settings) {
       int chan = changes(prev_frame, curr_frame, settings->character_mode,
                          settings->color);
       // the changes are more then half the screen print the whole frame
+#if RENDER
       if (chan / curr_frame->width > curr_frame->height * 2 / 3) {
+
         print_frame_as_string(prev_frame, curr_frame, settings->character_mode,
                               settings->color);
       } else {
         draw_frame(prev_frame, curr_frame, settings->character_mode,
                    settings->color);
       }
-
+#endif				
       t = clock() - t;
       double time_taken = ((double)t) / CLOCKS_PER_SEC * 1000; // in ms
       double delay_for_fps = (1 / settings->fps) * 1000;
@@ -340,11 +347,12 @@ int render_media(Settings *settings) {
     }
   }
 
+
   if (curr_frame != NULL)
     free_frame(curr_frame);
   if (prev_frame != NULL)
     free_frame(prev_frame);
-
+	
   // set the cursor at the end
   setCursorPosition(0, H + 1);
 
@@ -352,8 +360,8 @@ int render_media(Settings *settings) {
   fflush(pipein);
   pclose(pipein);
 
+
   puts(SHOW_CURSOR);
-  exit(0);
   return 0;
 }
 

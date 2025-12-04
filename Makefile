@@ -5,8 +5,8 @@
 # @version 0.1
 
 
-cc = gcc -Wall -lm
-CFLAGS=-march=x86-64 -mtune=generic -O2 -pipe -fno-plt -D_FORTIFY_SOURCE=2
+cc = gcc -Wall -lm -pedantic
+CFLAGS=-march=x86-64 -mtune=generic -O3 -pipe -fno-plt -D_FORTIFY_SOURCE=2
 
 out_folder = ./bin
 out = $(out_folder)/imagine

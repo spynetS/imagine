@@ -9,6 +9,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#define RENDER=1 // at 0 we will not render (for debug reasons)
+
 Settings settings;
 
 void setOption(int av, char **ac) { settings.character_mode = atoi(ac[1]); }
@@ -62,11 +64,9 @@ int main(int argc, char **argv) {
   addFlag("-m", "--mute", "1 to mute 0 to not mute (default 0)",
          setMute);
 
-  addFlag("-d","--debug","Shows debug information under the render", setDebug);
+	addFlag("-d","--debug","Shows debug information under the render", setDebug);
 
   addHelp();
-
-
 	parse(argc, argv);
 
   if(argc == 2 && strcmp(argv[1],"-h")==0){
@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
 	if(settings.width == 0 || settings.height == 0)
 		set_res(&settings);
   set_fps(&settings);
-  render_media(&settings);
+	render_media(&settings);
 
   return 0;
 }
