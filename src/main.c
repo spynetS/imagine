@@ -72,9 +72,16 @@ int main(int argc, char **argv) {
     exit(1);
   }
 	// if res isnt set set it with fprobe
-	if(settings.width == 0 || settings.height == 0)
+	if(settings.width == 0 || settings.height == 0){
 		set_res(&settings);
-  set_fps(&settings);
+	}
+
+	if(set_fps(&settings) == 0){
+		puts("no input file provided, -h for help");
+		exit(1);
+	}
+
+
 	render_media(&settings);
 
   return 0;

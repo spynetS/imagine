@@ -367,7 +367,7 @@ int render_media(Settings *settings) {
   return 0;
 }
 
-void set_fps(Settings *settings) {
+int set_fps(Settings *settings) {
 	// when run it will return a string, example 25/1
   char retrive_str[350];
   snprintf(
@@ -386,8 +386,7 @@ void set_fps(Settings *settings) {
 
   char *fps_str = malloc(sizeof(char) * 35);
   if(fread(fps_str, sizeof(char), 35, res) == 0){
-		perror("fps read");
-		exit(1);
+		return 0;
 	}
   if (strcmp(fps_str, "") == 0)
     exit(1);
@@ -403,6 +402,7 @@ void set_fps(Settings *settings) {
   settings->fps = (double)atoi(buf) / atoi(fps_str);
   free(fps_str - 1 - index);
   pclose(res);
+	return 1;
 }
 
 int set_res(Settings *settings) {
@@ -423,8 +423,7 @@ int set_res(Settings *settings) {
   }
   char res_str[100];
   if(fread(res_str, sizeof(char), 10, res) == 0){
-		perror("res fread");
-		exit(1);
+		return 0;
 	}
 
   if (strcmp(res_str, "") == 0)
