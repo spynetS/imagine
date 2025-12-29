@@ -15,17 +15,23 @@ Imagine uses ffmpeg and ffplay for media extraction and uses pipeing and system 
 yay -S imagine-term-git
 ```
 ### Manual
-Just clone and make
+Just clone and build
+
+```
+ninja
+meson
+ffmpeg
+```
 
 
 ```
 git clone --depth 1 https://github.com/spynetS/imagine
 cd imagine
-make
+meson setup build && cd build && meson compile
 ```
 to install globaly
 ```
-sudo ln -s $PWD/bin/imagine /usr/local/bin
+meson install
 ```
 
 ## Usage 
