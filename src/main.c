@@ -12,21 +12,35 @@
 
 Settings settings;
 
-void setOption(int av, char **ac) { settings.character_mode = atoi(ac[1]); }
-void setColor(int av, char **ac) { settings.color = atoi(ac[1]); }
+void setOption(int av, char **ac) {
+	if(av <= 0) return;
+	settings.character_mode = atoi(ac[1]);
+}
+void setColor(int av, char **ac) {
+	if(av <= 0) return;
+	settings.color = atoi(ac[1]);
+}
 
 void setRes(int av, char **ac) {
+	if(av <= 1) return;
+
   settings.width = atoi(ac[1]);
   settings.height = atoi(ac[2]);
 	settings.max_width = atoi(ac[1]);
   settings.max_height = atoi(ac[2]);
 }
 void setMute(int av, char **ac) {
+	if(av <= 0) return;
   settings.mute = atoi(ac[1]);
 }
-void setHideCursor(int av, char **ac) { settings.hide_cursor = atoi(ac[1]); }
+void setHideCursor(int av, char **ac) {
+	if(av <= 0) return;
+	settings.hide_cursor = atoi(ac[1]);
+}
 
 void setDebug(int av,char**ac){
+	(void)av;
+	(void)ac;
   settings.debug = 1;
 }
 

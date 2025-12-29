@@ -19,7 +19,7 @@
  */
 
 
-void addFlag(char* name, char* longname, char* description, void *oncall);
+void addFlag(char* name, char* longname, char* description, void (*oncall)(int, char**));
 void addHelp();
 int  parse(int argc, char** argv);
 void printHelp(int argc, char** args);

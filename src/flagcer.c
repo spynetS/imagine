@@ -12,7 +12,7 @@ typedef struct flag{
 } Flag;
 
 Flag flags[20];
-int flaglength = 0;
+size_t flaglength = 0;
 
 void addFlag(char* name, char* longname, char* description, void (*oncall)(int argc, char** args)){
     Flag flag;
@@ -26,28 +26,30 @@ void addFlag(char* name, char* longname, char* description, void (*oncall)(int a
 }
 
 void printHelp(int argc, char** args){
-    int nl = 0;
-    int lnl = 0;
+	  (void)argc; // This silences the unused parameter warning
+	  (void)args; // if you also don't use args
+    size_t nl = 0;
+    size_t lnl = 0;
     //calculate longset names 
-    for(int i = 0; i < flaglength; i++){
-        if(strlen(flags[i].name)>nl) nl = strlen(flags[i].name);
-        if(strlen(flags[i].longname)>lnl) lnl = strlen(flags[i].longname);
+    for(size_t i = 0; i < flaglength; i++){
+        if(strlen(flags[i].name) > nl) nl = strlen(flags[i].name);
+        if(strlen(flags[i].longname) > lnl) lnl = strlen(flags[i].longname);
     }
     //adde some padding
     nl+=2;
     lnl+=5;
     //print the flags
-    for(int i = 0; i < flaglength; i++){
+    for(size_t i = 0; i < flaglength; i++){
         //name
         printf("%s", flags[i].name);
         //right amount of spaces 
-        for(int j = 0; j < nl-strlen(flags[i].name); j++){
+        for(size_t j = 0; j < nl-strlen(flags[i].name); j++){
             printf(" ");
         }
         //print longname
         printf("%s", flags[i].longname);
         //right amount of spaces
-        for(int j = 0; j < lnl-strlen(flags[i].longname); j++){
+        for(size_t j = 0; j < lnl-strlen(flags[i].longname); j++){
             printf(" ");
         }
         //description
@@ -75,7 +77,7 @@ int parse(int argc, char** argv){
     int flagsFound = 0;
 
     for(int i = 0; i < argc; i++){
-        for(int j = 0; j < flaglength; j++){
+        for(size_t j = 0; j < flaglength; j++){
             // we find a flag
             if(strcmp(argv[i],flags[j].name) == 0 ||
                strcmp(argv[i],flags[j].longname) == 0){
