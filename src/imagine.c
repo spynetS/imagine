@@ -10,7 +10,7 @@
 
 #define RENDER 1 // at 0 we will not render (for debug reasons)
 
-#define THREADS 4
+#define THREADS 8
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -166,24 +166,85 @@ void draw_frame_st(Frame *prev_frame, Frame *curr_frame, int characters,
   }
 }
 
+void draw_frame_buffer(Frame* curr_frame, int characters, int color,
+                       int start_pixel, int end_pixel, char* output) {
+
+    int width = curr_frame->width;
+    int x = (start_pixel % width) * 2;  // 2 chars per pixel
+    int y = start_pixel / width;
+
+    char* ptr = output; // current write position in buffer
+
+    for (int p = start_pixel; p < end_pixel; p++) {
+        int i = p * 3; // index in pixel_data
+
+        char pixel[50];
+        set_pixel(pixel, i, curr_frame, characters, color);
+        ptr += sprintf(ptr, "%s", pixel); // append pixel string
+
+        x += 2;
+        if (x >= width * 2) {
+            x = 0;
+            y++;
+            *ptr++ = '\n'; // append newline
+            *ptr = '\0';
+        }
+    }
+}
+
 typedef struct {
   Frame *prev_frame;
   Frame *curr_frame;
   int characters;
   int color;
-  int start;
-  int end;
+  int start_pixel;
+  int end_pixel;
+
+  char* output;
+  
 } DrawJob;
 
-void* draw_job (void *ptr) {
-  DrawJob *drawjob = (DrawJob*) ptr;
-  draw_frame_st(drawjob->prev_frame,
-				drawjob->curr_frame,
-				drawjob->characters,
-				drawjob->color,
-				drawjob->start,
-				drawjob->end);
+void* draw_job(void* ptr) {
+    DrawJob* job = (DrawJob*)ptr;
+    Frame* curr = job->curr_frame;
+    int width = curr->width;
+
+    char* ptr_out = job->output;
+
+    // Compute starting x,y based on start_pixel
+    int x = (job->start_pixel % width) * 2; // 2 chars per pixel
+    int y = job->start_pixel / width;
+
+    for (int p = job->start_pixel; p < job->end_pixel; p++) {
+        int i = p * curr->comp; // index in pixel_data
+        char pixel[50];
+        set_pixel(pixel, i, curr, job->characters, job->color);
+
+        // Append pixel to buffer
+        ptr_out += sprintf(ptr_out, "%s", pixel);
+
+        x += 2; // 2 chars per pixel
+        if (x >= width * 2) {
+            x = 0;
+            y++;
+            *ptr_out++ = '\n';
+            *ptr_out = '\0';
+        }
+    }
+
+    return NULL;
 }
+
+/* void* draw_job (void *ptr) { */
+/*   DrawJob *drawjob = (DrawJob*) ptr; */
+/*   draw_frame_buffer(drawjob->curr_frame, */
+/* 					drawjob->characters, */
+/* 					drawjob->color, */
+/* 					drawjob->start, */
+/* 					drawjob->end, */
+/* 					drawjob->output); */
+/*   return 0; */
+/* } */
 
 
 void draw_frame(Frame *prev_frame, Frame *curr_frame, int characters,
@@ -268,7 +329,7 @@ void *play_sound(void *vargp) {
 }
 
 int render_media(Settings *settings) {
-#if 0
+#if 1
   if(system("clear") == -1){
 	perror("system");
   }
@@ -344,7 +405,7 @@ int render_media(Settings *settings) {
         }
         setCursorPosition(0, 1);
 		print_frame_as_string(curr_frame, settings->character_mode,
-									  settings->color);
+							  settings->color);
 
       }
       settings->playing = !settings->playing;
@@ -389,31 +450,45 @@ int render_media(Settings *settings) {
 
       // the changes are more then half the screen print the whole frame
 #if RENDER
-	  pthread_t threads[THREADS];
-	  DrawJob jobs[THREADS];
 
-	  int pixels = curr_frame->width * curr_frame->height;
-	  int per_pixel = pixels / THREADS;
-	  
-	  for (int i = 0; i < THREADS; i++) {
-		int start_pixel = per_pixel * i;
-		int end_pixel   = (i == THREADS - 1) ? pixels : per_pixel * (i + 1);
-	
-		jobs[i] = (DrawJob){
-		  .prev_frame = prev_frame,
-		  .curr_frame = curr_frame,
-		  .characters = settings->character_mode,
-		  .color = settings->color,
-		  .start = start_pixel,
-		  .end = end_pixel
-		};
+    pthread_t threads[THREADS];
+    DrawJob jobs[THREADS];
+    char* outputs[THREADS];
 
-		pthread_create(&threads[i], NULL, draw_job, &jobs[i]);
-	  }
-	  for(int i = 0; i < THREADS; i ++) {
-		pthread_join(threads[i], NULL);
-	  }
+    int pixels = curr_frame->width * curr_frame->height;
+    int per_pixel = pixels / THREADS;
 
+    // Create threads
+    for (int i = 0; i < THREADS; i++) {
+        int start_pixel = per_pixel * i;
+        int end_pixel   = (i == THREADS - 1) ? pixels : per_pixel * (i + 1);
+
+        // Allocate buffer: 3-4 chars per pixel safe estimate
+		outputs[i] = malloc((end_pixel - start_pixel) * 32);
+		
+        jobs[i] = (DrawJob){
+            .prev_frame = prev_frame,
+            .curr_frame = curr_frame,
+            .characters = settings->character_mode,
+            .color = settings->color,
+            .start_pixel = start_pixel,
+            .end_pixel = end_pixel,
+            .output = outputs[i]
+        };
+
+        pthread_create(&threads[i], NULL, draw_job, &jobs[i]);
+    }
+
+    // Wait for threads
+    for (int i = 0; i < THREADS; i++) {
+        pthread_join(threads[i], NULL);
+    }
+
+    // Print final frame
+    for (int i = 0; i < THREADS; i++) {
+        printf("%s", outputs[i]);
+		free(outputs[i]);
+    }
 	  
 #endif				
       t = clock() - t;
