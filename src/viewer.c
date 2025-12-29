@@ -60,6 +60,7 @@ void render(Settings* settings, const char* path,  String_Array *paths, int inde
 {
   sprintf(settings->path,"%s/%s",path, paths->items[index]);
   init_media(settings);
+  settings->max_height = termHeight();
   render_media(settings);
 }
 
@@ -67,7 +68,13 @@ int start_viewing(Settings* settings) {
 
   disableEcho();
   String_Array paths = {0};
-  char* path = "/home/spy/Pictures";
+  char* path;
+  if(strcmp(settings->path,"") == 0){
+	path = "./";
+  }
+  else {
+	path = strdup(settings->path);
+  }
   
   DIR *dir = opendir(path);
   if (!dir) {
