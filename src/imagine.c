@@ -16,8 +16,8 @@
 // This is the chars used sorted from low to high brightness
 char *ascii0 = " .isk@";
 char *ascii1 =
-    " `.-':_,^=;><+!rc*/"
-    "z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@";
+	" `.-':_,^=;><+!rc*/"
+	"z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@";
 
 // We have to use a string array because unicode is larger then a char
 char *unicode1[] = {"░", "▒", "▓", "█"};
@@ -46,77 +46,87 @@ int brightness(int red, int green, int blue) {
   return (0.299 * red + green * 0.587 + blue * 0.114);
 }
 
-void set_pixel(char *str, int i, Frame *frame, int characters, int color) {
+int set_pixel(char *str, int i, Frame *frame, int characters, int color) {
   int contrast = 0;
   char color_str[28] = "";
+	int written = 0;
   switch (color) {
   case 1:
-    snprintf(color_str,sizeof(color_str), "\033[38;2;%d;%d;%dm", frame->pixel_data[i],
-            frame->pixel_data[i + 1], frame->pixel_data[i + 2]);
+   snprintf(color_str,sizeof(color_str), "\033[38;2;%d;%d;%dm", frame->pixel_data[i],
+											 frame->pixel_data[i + 1], frame->pixel_data[i + 2]);
     break;
   case 2:
     snprintf(color_str,sizeof(color_str), "\033[48;2;%d;%d;%dm",
-            MIN(frame->pixel_data[i] + contrast, 255),
-            MIN(frame->pixel_data[i + 1] + contrast, 255),
-            MIN(frame->pixel_data[i + 2] + contrast, 255));
+											 MIN(frame->pixel_data[i] + contrast, 255),
+											 MIN(frame->pixel_data[i + 1] + contrast, 255),
+											 MIN(frame->pixel_data[i + 2] + contrast, 255));
     break;
   }
+	
   int index = 0;
   size_t str_size = sizeof(char) * 50 * frame->width * frame->height;
   switch (characters) {
   case 0:
-    snprintf(str,str_size, "%s%c ", color_str,
-            ascii0[(brightness(frame->pixel_data[i], frame->pixel_data[i + 1],
-                               frame->pixel_data[i + 2]) *
-                    (strlen(ascii0) - 1) / 255)]);
+     written = snprintf(str,str_size, "%s%c ", color_str,
+						 ascii0[(brightness(frame->pixel_data[i], frame->pixel_data[i + 1],
+																frame->pixel_data[i + 2]) *
+										 (strlen(ascii0) - 1) / 255)]);
     break;
   case 1:
-    snprintf(str,str_size, "%s%c ", color_str,
-            ascii1[(brightness(frame->pixel_data[i], frame->pixel_data[i + 1],
-                               frame->pixel_data[i + 2]) *
-                    (strlen(ascii1) - 1) / 255)]);
+     written = snprintf(str,str_size, "%s%c ", color_str,
+						 ascii1[(brightness(frame->pixel_data[i], frame->pixel_data[i + 1],
+																frame->pixel_data[i + 2]) *
+										 (strlen(ascii1) - 1) / 255)]);
     break;
   case 2:
     index = (int)(brightness(frame->pixel_data[i], frame->pixel_data[i + 1],
                              frame->pixel_data[i + 2]) *
                   (unicode - 1) / 255);
-    snprintf(str,str_size, "%s%s%s", color_str, unicode1[index], unicode1[index]);
+     written = snprintf(str,str_size, "%s%s%s", color_str, unicode1[index], unicode1[index]);
     break;
   case 3:
-    snprintf(str,str_size, "%s██", color_str);
+     written = snprintf(str,str_size, "%s██", color_str);
     break;
   }
+	return written;
 }
 
 void print_frame_as_string(Frame *prev_frame, Frame *curr_frame, int characters,
                            int color) {
-  int offset = 0;
-  size_t output_size = sizeof(char) * 50 * curr_frame->width * curr_frame->height;
-  char *output =
-      malloc(output_size);
-  if (characters == 3)
-    color = 1;
+	if (characters == 3)
+		color = 1;
 
-  int x = 0;
-  for (int i = 0; i < curr_frame->width * curr_frame->height * curr_frame->comp;
-       i += curr_frame->comp) {
+	size_t output_size = 50 * curr_frame->width * curr_frame->height;
+	char *output = malloc(output_size);
+	if (!output) {
+		perror("malloc");
+		return;
+	}
 
-    set_pixel(output, i, curr_frame, characters, color);
+	size_t offset = 0;
+	int x = 0;
 
-    int o = strlen(output);
-    output += o;
-    offset += o;
-    x += 2; // we add 2 becuase we print 2 chars
-    if (x == curr_frame->width * 2) {
-      // add a new line when a row is done
-      snprintf(output,output_size, "\n");
-      output++;
-      offset++;
-      x = 0;
-    }
-  }
-  printf("%s", output - offset);
-  free(output - offset);
+	for (int i = 0; i < curr_frame->width * curr_frame->height * curr_frame->comp; i += curr_frame->comp) {
+		// set_pixel should write into output + offset, returning how many chars it wrote
+		int written = set_pixel(output + offset, i, curr_frame, characters, color);
+		offset += written;
+
+		x += 2; // assuming 2 chars per pixel
+		if (x == curr_frame->width * 2) {
+			if (offset < output_size - 1) {
+				output[offset++] = '\n'; // add newline safely
+			}
+			x = 0;
+		}
+
+		if (offset >= output_size - 1) {
+			break; // prevent overflow
+		}
+	}
+
+	output[offset] = '\0'; // null-terminate
+	printf("%s", output);
+	free(output);
 }
 
 void draw_frame(Frame *prev_frame, Frame *curr_frame, int characters,
@@ -189,7 +199,7 @@ void *play_sound(void *vargp) {
   Settings *settings = (Settings *)vargp;
   if(settings->mute == 0){
     snprintf(str,sizeof(str), "ffplay -nodisp -autoexit '%s' > /dev/null 2>&1 &",
-            settings->path);
+						 settings->path);
   }
 
 	int ret = system(str);
@@ -216,9 +226,9 @@ int render_media(Settings *settings) {
   int W = settings->width * scaler;
 
   snprintf(str,sizeof(str),
-          "ffmpeg -i \"%s\" -f image2pipe -vcodec rawvideo -pix_fmt rgb24 -vf "
-          "\"scale=%d:%d\" - -hide_banner -loglevel 8",
-          settings->path, (int)(W), (int)(H));
+					 "ffmpeg -i \"%s\" -f image2pipe -vcodec rawvideo -pix_fmt rgb24 -vf "
+					 "\"scale=%d:%d\" - -hide_banner -loglevel 8",
+					 settings->path, (int)(W), (int)(H));
 
   FILE *pipein = popen(str, "r");
   pthread_t thread_id;
@@ -247,7 +257,7 @@ int render_media(Settings *settings) {
       snprintf(tmp,sizeof(tmp), "killall ffplay");
       if(system(tmp)==-1){
 				perror("system");
-			 }
+			}
       pthread_exit(&thread_id);
       break;
     }
@@ -277,7 +287,7 @@ int render_media(Settings *settings) {
         }
         setCursorPosition(0, 1);
         print_frame_as_string(prev_frame, curr_frame, settings->character_mode,
-                            settings->color);
+															settings->color);
 
       }
       settings->playing = !settings->playing;
@@ -337,10 +347,10 @@ int render_media(Settings *settings) {
       setCursorPosition(0, H + 1);
       if(settings->debug){
         printf(WHITE "Time: %d; FPS: %lf; Delay: %lf %lf; changes %d limit %d; "
-                    "COMP %d; Q to quit, SPACE to pause",
-              frame, settings->fps, delay_for_fps - time_taken, time_taken,
-              chan / curr_frame->width, curr_frame->height * 2 / 3,
-              curr_frame->comp);
+							 "COMP %d; Q to quit, SPACE to pause",
+							 frame, settings->fps, delay_for_fps - time_taken, time_taken,
+							 chan / curr_frame->width, curr_frame->height * 2 / 3,
+							 curr_frame->comp);
       }
       setCursorPosition(0, 0);
 
@@ -371,11 +381,11 @@ int set_fps(Settings *settings) {
 	// when run it will return a string, example 25/1
   char retrive_str[350];
   snprintf(
-      retrive_str,
-      sizeof(retrive_str),
-      "ffprobe -v 8 -select_streams v -of default=noprint_wrappers=1:nokey=1 "
-      "-show_entries stream=avg_frame_rate '%s'",
-      settings->path);
+					 retrive_str,
+					 sizeof(retrive_str),
+					 "ffprobe -v 8 -select_streams v -of default=noprint_wrappers=1:nokey=1 "
+					 "-show_entries stream=avg_frame_rate '%s'",
+					 settings->path);
 
   FILE *res = popen(retrive_str, "r");
 
@@ -411,9 +421,9 @@ int set_res(Settings *settings) {
 	// when run it will return a string of [width]x[height]
   snprintf(retrive_str,
            sizeof(retrive_str),
-          "ffprobe -v 8 -select_streams v -show_entries stream=width,height "
-          "-of csv=p=0:s=x \"%s\"",
-          settings->path);
+					 "ffprobe -v 8 -select_streams v -show_entries stream=width,height "
+					 "-of csv=p=0:s=x \"%s\"",
+					 settings->path);
 
   FILE *res = popen(retrive_str, "r");
 
