@@ -15,7 +15,7 @@ Imagine uses ffmpeg and ffplay for media extraction and uses pipeing and system 
 yay -S imagine-term-git
 ```
 ### Manual
-Just clone and make
+Just clone and build
 
 
 ```
