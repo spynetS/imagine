@@ -11,7 +11,7 @@ project(
 ffmpeg = find_program('ffmpeg', required: true)
 
 fs = import('fs')
-if not fs.is_dir(meson.current_source_dir() / 'lib/printer')
+if not fs.exists(meson.current_source_dir() / 'lib/printer/meson.build')
   message('The printer submodule is missing!')
   message('Please run: git submodule update --init --recursive')
   message('Or download the library independently')
