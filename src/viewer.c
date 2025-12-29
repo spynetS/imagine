@@ -61,6 +61,7 @@ void render(Settings* settings, const char* path,  String_Array *paths, int inde
   sprintf(settings->path,"%s/%s",path, paths->items[index]);
   init_media(settings);
   settings->max_height = termHeight();
+  settings->max_width = termWidth();
   render_media(settings);
 }
 

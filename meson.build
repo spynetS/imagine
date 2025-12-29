@@ -6,8 +6,6 @@ project(
   default_options : ['warning_level=3'],
 )
 
-
-
 ffmpeg = find_program('ffmpeg', required: true)
 
 fs = import('fs')
@@ -18,7 +16,6 @@ if not fs.exists(meson.current_source_dir() / 'lib/printer/meson.build')
 endif
 
 subdir('lib/printer')
-
 dependencies = [
   printer_dep,
 ]
