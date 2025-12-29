@@ -21,11 +21,12 @@ Just clone and make
 ```
 git clone --depth 1 https://github.com/spynetS/imagine
 cd imagine
-make
+git submodule update --init --recursive
+meson setup build && cd build && meson compile
 ```
 to install globaly
 ```
-sudo ln -s $PWD/bin/imagine /usr/local/bin
+meson install
 ```
 
 ## Usage 
