@@ -52,14 +52,14 @@ int set_pixel(char *str, int i, Frame *frame, int characters, int color) {
 	int written = 0;
   switch (color) {
   case 1:
-   snprintf(color_str,sizeof(color_str), "\033[38;2;%d;%d;%dm", frame->pixel_data[i],
-											 frame->pixel_data[i + 1], frame->pixel_data[i + 2]);
+		snprintf(color_str,sizeof(color_str), "\033[38;2;%d;%d;%dm", frame->pixel_data[i],
+						 frame->pixel_data[i + 1], frame->pixel_data[i + 2]);
     break;
   case 2:
     snprintf(color_str,sizeof(color_str), "\033[48;2;%d;%d;%dm",
-											 MIN(frame->pixel_data[i] + contrast, 255),
-											 MIN(frame->pixel_data[i + 1] + contrast, 255),
-											 MIN(frame->pixel_data[i + 2] + contrast, 255));
+						 MIN(frame->pixel_data[i] + contrast, 255),
+						 MIN(frame->pixel_data[i + 1] + contrast, 255),
+						 MIN(frame->pixel_data[i + 2] + contrast, 255));
     break;
   }
 	
@@ -67,31 +67,31 @@ int set_pixel(char *str, int i, Frame *frame, int characters, int color) {
   size_t str_size = sizeof(char) * 50 * frame->width * frame->height;
   switch (characters) {
   case 0:
-     written = snprintf(str,str_size, "%s%c ", color_str,
-						 ascii0[(brightness(frame->pixel_data[i], frame->pixel_data[i + 1],
-																frame->pixel_data[i + 2]) *
-										 (strlen(ascii0) - 1) / 255)]);
+		written = snprintf(str,str_size, "%s%c ", color_str,
+											 ascii0[(brightness(frame->pixel_data[i], frame->pixel_data[i + 1],
+																					frame->pixel_data[i + 2]) *
+															 (strlen(ascii0) - 1) / 255)]);
     break;
   case 1:
-     written = snprintf(str,str_size, "%s%c ", color_str,
-						 ascii1[(brightness(frame->pixel_data[i], frame->pixel_data[i + 1],
-																frame->pixel_data[i + 2]) *
-										 (strlen(ascii1) - 1) / 255)]);
+		written = snprintf(str,str_size, "%s%c ", color_str,
+											 ascii1[(brightness(frame->pixel_data[i], frame->pixel_data[i + 1],
+																					frame->pixel_data[i + 2]) *
+															 (strlen(ascii1) - 1) / 255)]);
     break;
   case 2:
     index = (int)(brightness(frame->pixel_data[i], frame->pixel_data[i + 1],
                              frame->pixel_data[i + 2]) *
                   (unicode - 1) / 255);
-     written = snprintf(str,str_size, "%s%s%s", color_str, unicode1[index], unicode1[index]);
+		written = snprintf(str,str_size, "%s%s%s", color_str, unicode1[index], unicode1[index]);
     break;
   case 3:
-     written = snprintf(str,str_size, "%s██", color_str);
+		written = snprintf(str,str_size, "%s██", color_str);
     break;
   }
 	return written;
 }
 
-void print_frame_as_string(Frame *prev_frame, Frame *curr_frame, int characters,
+void print_frame_as_string(Frame *curr_frame, int characters,
                            int color) {
 	if (characters == 3)
 		color = 1;
@@ -158,7 +158,7 @@ void draw_frame(Frame *prev_frame, Frame *curr_frame, int characters,
   }
 }
 
-int changes(Frame *prev_frame, Frame *curr_frame, int characters, int color) {
+int changes(Frame *prev_frame, Frame *curr_frame) {
   int changes = 0;
   for (int i = 0; i < curr_frame->width * curr_frame->height * curr_frame->comp;
        i += curr_frame->comp) {
@@ -286,7 +286,7 @@ int render_media(Settings *settings) {
 					}
         }
         setCursorPosition(0, 1);
-        print_frame_as_string(prev_frame, curr_frame, settings->character_mode,
+        print_frame_as_string(curr_frame, settings->character_mode,
 															settings->color);
 
       }
@@ -327,13 +327,12 @@ int render_media(Settings *settings) {
       clock_t t;
       t = clock();
 
-      int chan = changes(prev_frame, curr_frame, settings->character_mode,
-                         settings->color);
+      int chan = changes(prev_frame, curr_frame);
       // the changes are more then half the screen print the whole frame
 #if RENDER
       if (chan / curr_frame->width > curr_frame->height * 2 / 3) {
 
-        print_frame_as_string(prev_frame, curr_frame, settings->character_mode,
+        print_frame_as_string(curr_frame, settings->character_mode,
                               settings->color);
       } else {
         draw_frame(prev_frame, curr_frame, settings->character_mode,
@@ -442,7 +441,7 @@ int set_res(Settings *settings) {
 	// we parse the string and save the width and height based on where the x is
   int w_len = 0;
   char num_holder[5];
-  for (int i = 0; i < strlen(res_str); i++) {
+  for (size_t i = 0; i < strlen(res_str); i++) {
     if (res_str[i] == 'x') {
       num_holder[i] = '\0';
       (settings->width) = atoi(num_holder);
