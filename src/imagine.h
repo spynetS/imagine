@@ -21,6 +21,7 @@ typedef struct settings {
   int playing;
   int mute;
   int debug;
+  int viewer;
 } Settings;
 
 Frame *new_frame_data(unsigned char *pixels, int width, int height, int comp);

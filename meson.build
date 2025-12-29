@@ -26,6 +26,7 @@ dependencies = [
 sources = [
   'src/flagcer.c',
   'src/imagine.c',
+  'src/viewer.c',
   'src/main.c',
 ]
 
