@@ -10,6 +10,8 @@
 
 #define RENDER 1 // at 0 we will not render (for debug reasons)
 
+#define THREADS 4
+
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
@@ -128,6 +130,61 @@ void print_frame_as_string(Frame *curr_frame, int characters,
   printf("%s", output);
   free(output);
 }
+
+
+
+void draw_frame_st(Frame *prev_frame, Frame *curr_frame, int characters,
+				   int color, int start, int end) {
+
+  int offsetX = 0;
+  int offsetY = 0;
+
+  int x = (start % curr_frame->width) * 2; // 2 chars per pixel
+  int y = start / curr_frame->width;
+
+  prev_frame = NULL;
+  
+  if (characters == 3)
+    color = 1;
+  for (int p = start; p < end;
+       p ++) {
+	int i = p * 3; // curr_frame->comp;
+    if (prev_frame == NULL ||
+        (curr_frame->pixel_data[i] != prev_frame->pixel_data[i] ||
+         curr_frame->pixel_data[i + 1] != prev_frame->pixel_data[i + 1] ||
+         curr_frame->pixel_data[i + 2] != prev_frame->pixel_data[i + 2])) {
+
+      char str[50];		 
+      set_pixel(str, i, curr_frame, characters, color);
+      setCharAt(x + offsetX, y + offsetY, str);
+    }
+    x += 2; // we add 2 becuase we print 2 chars
+    if (x == curr_frame->width * 2) {
+      x = 0;
+      y++;
+    }
+  }
+}
+
+typedef struct {
+  Frame *prev_frame;
+  Frame *curr_frame;
+  int characters;
+  int color;
+  int start;
+  int end;
+} DrawJob;
+
+void* draw_job (void *ptr) {
+  DrawJob *drawjob = (DrawJob*) ptr;
+  draw_frame_st(drawjob->prev_frame,
+				drawjob->curr_frame,
+				drawjob->characters,
+				drawjob->color,
+				drawjob->start,
+				drawjob->end);
+}
+
 
 void draw_frame(Frame *prev_frame, Frame *curr_frame, int characters,
                 int color) {
@@ -286,8 +343,8 @@ int render_media(Settings *settings) {
 		  }
         }
         setCursorPosition(0, 1);
-        print_frame_as_string(curr_frame, settings->character_mode,
-							  settings->color);
+		print_frame_as_string(curr_frame, settings->character_mode,
+									  settings->color);
 
       }
       settings->playing = !settings->playing;
@@ -303,6 +360,7 @@ int render_media(Settings *settings) {
 
       break;
     }
+
 
     if (settings->playing) {
       unsigned char *data = malloc(sizeof(unsigned char) * H * W * comp);
@@ -327,17 +385,36 @@ int render_media(Settings *settings) {
       clock_t t;
       t = clock();
 
-      int chan = changes(prev_frame, curr_frame);
+      //int chan = changes(prev_frame, curr_frame);
+
       // the changes are more then half the screen print the whole frame
 #if RENDER
-      if (chan / curr_frame->width > curr_frame->height * 2 / 3) {
+	  pthread_t threads[THREADS];
+	  DrawJob jobs[THREADS];
 
-        print_frame_as_string(curr_frame, settings->character_mode,
-                              settings->color);
-      } else {
-        draw_frame(prev_frame, curr_frame, settings->character_mode,
-                   settings->color);
-      }
+	  int pixels = curr_frame->width * curr_frame->height;
+	  int per_pixel = pixels / THREADS;
+	  
+	  for (int i = 0; i < THREADS; i++) {
+		int start_pixel = per_pixel * i;
+		int end_pixel   = (i == THREADS - 1) ? pixels : per_pixel * (i + 1);
+	
+		jobs[i] = (DrawJob){
+		  .prev_frame = prev_frame,
+		  .curr_frame = curr_frame,
+		  .characters = settings->character_mode,
+		  .color = settings->color,
+		  .start = start_pixel,
+		  .end = end_pixel
+		};
+
+		pthread_create(&threads[i], NULL, draw_job, &jobs[i]);
+	  }
+	  for(int i = 0; i < THREADS; i ++) {
+		pthread_join(threads[i], NULL);
+	  }
+
+	  
 #endif				
       t = clock() - t;
       double time_taken = ((double)t) / CLOCKS_PER_SEC * 1000; // in ms
@@ -345,11 +422,11 @@ int render_media(Settings *settings) {
 
       setCursorPosition(0, H + 1);
       if(settings->debug){
-        printf(WHITE "Time: %d; FPS: %lf; Delay: %lf %lf; changes %d limit %d; "
-			   "COMP %d; Q to quit, SPACE to pause",
-			   frame, settings->fps, delay_for_fps - time_taken, time_taken,
-			   chan / curr_frame->width, curr_frame->height * 2 / 3,
-			   curr_frame->comp);
+        /* printf(WHITE "Time: %d; FPS: %lf; Delay: %lf %lf; changes %d limit %d; " */
+		/* 	   "COMP %d; Q to quit, SPACE to pause", */
+		/* 	   frame, settings->fps, delay_for_fps - time_taken, time_taken, */
+		/* 	   chan / curr_frame->width, curr_frame->height * 2 / 3, */
+		/* 	   curr_frame->comp); */
       }
       setCursorPosition(0, 0);
 
