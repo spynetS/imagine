@@ -457,7 +457,7 @@ int render_media(Settings *settings) {
       clock_t t;
       t = clock();
 
-      //int chan = changes(prev_frame, curr_frame);
+      int chan = changes(prev_frame, curr_frame);
 
       // the changes are more then half the screen print the whole frame
 
@@ -510,16 +510,16 @@ int render_media(Settings *settings) {
       setCursorPosition(0, H + 1);
       if(settings->debug){
         printf(WHITE "Time: %d; FPS: %lf; Delay: %lf %lf; changes %d limit %d; "
-			   "COMP %d; RENDER %d; Q to quit, SPACE to pause",
+			   "COMP %d; Q to quit, SPACE to pause",
 			   frame, settings->fps, delay_for_fps - time_taken, time_taken,
 			   chan / curr_frame->width, curr_frame->height * 2 / 3,
-							 curr_frame->comp,render_option);
+							 curr_frame->comp);
 
       }
-	  setCursorPosition(0, 0);
+			setCursorPosition(0, 0);
 
       frame++;
-	  //      msleep(delay_for_fps - time_taken);
+			msleep(delay_for_fps - time_taken);
     }
   }
 
