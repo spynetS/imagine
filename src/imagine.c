@@ -8,8 +8,8 @@
 #include <string.h>
 #include <time.h>
 
-#define RENDER 1 // at 0 we will not render (for debug reasons)
-#define AUTOSCALE 1
+#define RENDER 0
+#define AUTOSCALE 0
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -47,49 +47,46 @@ int brightness(int red, int green, int blue) {
   return (0.299 * red + green * 0.587 + blue * 0.114);
 }
 
+void write_number(char *out, int *offset, int n) {
+    if (n >= 100) {
+        out[(*offset)++] = '0' + n / 100;
+        n %= 100;
+        out[(*offset)++] = '0' + n / 10;
+        out[(*offset)++] = '0' + n % 10;
+    } else if (n >= 10) {
+        out[(*offset)++] = '0' + n / 10;
+        out[(*offset)++] = '0' + n % 10;
+    } else {
+        out[(*offset)++] = '0' + n;
+    }
+}
+
 int set_pixel(char *str, int i, Frame *frame, int characters, int color) {
-  int contrast = 0;
-  char color_str[28] = "";
-  int written = 0;
-  switch (color) {
-  case 1:
-	snprintf(color_str,sizeof(color_str), "\033[38;2;%d;%d;%dm", frame->pixel_data[i],
-			 frame->pixel_data[i + 1], frame->pixel_data[i + 2]);
-    break;
-  case 2:
-    snprintf(color_str,sizeof(color_str), "\033[48;2;%d;%d;%dm",
-			 MIN(frame->pixel_data[i] + contrast, 255),
-			 MIN(frame->pixel_data[i + 1] + contrast, 255),
-			 MIN(frame->pixel_data[i + 2] + contrast, 255));
-    break;
-  }
+	int contrast = 0;
+	int r = MIN(frame->pixel_data[i] + contrast, 255);
+	int g = MIN(frame->pixel_data[i + 1] + contrast, 255);
+	int b = MIN(frame->pixel_data[i + 2] + contrast, 255);
 	
-  int index = 0;
-  size_t str_size = sizeof(char) * 50 * frame->width * frame->height;
-  switch (characters) {
-  case 0:
-	written = snprintf(str,str_size, "%s%c ", color_str,
-					   ascii0[(brightness(frame->pixel_data[i], frame->pixel_data[i + 1],
-										  frame->pixel_data[i + 2]) *
-							   (strlen(ascii0) - 1) / 255)]);
-    break;
-  case 1:
-	written = snprintf(str,str_size, "%s%c ", color_str,
-					   ascii1[(brightness(frame->pixel_data[i], frame->pixel_data[i + 1],
-										  frame->pixel_data[i + 2]) *
-							   (strlen(ascii1) - 1) / 255)]);
-    break;
-  case 2:
-    index = (int)(brightness(frame->pixel_data[i], frame->pixel_data[i + 1],
-                             frame->pixel_data[i + 2]) *
-                  (unicode - 1) / 255);
-	written = snprintf(str,str_size, "%s%s%s", color_str, unicode1[index], unicode1[index]);
-    break;
-  case 3:
-	written = snprintf(str,str_size, "%s██", color_str);
-    break;
-  }
-  return written;
+  int written = 0;
+
+	str[written++] = '\033';
+	str[written++] = '[';
+	str[written++] = '4';
+	str[written++] = '8';
+	str[written++] = ';';
+	str[written++] = '2';
+	str[written++] = ';';
+	write_number(str, &written, r);
+	str[written++] = ';';
+	write_number(str, &written, g);
+	str[written++] = ';';
+	str[written++] = '0';
+	write_number(str, &written, b);
+	str[written++] = 'm';
+	str[written++] = ' ';
+	str[written++] = ' ';
+
+	return written;
 }
 
 void print_frame_as_string(Frame *curr_frame, int characters,
@@ -108,14 +105,14 @@ void print_frame_as_string(Frame *curr_frame, int characters,
   size_t offset = 0;
   int x = 0;
 	
-  for (int i = 0; i < curr_frame->width * curr_frame->height * curr_frame->comp; i += curr_frame->comp) {
+  for (int i = 0; i < (curr_frame->width * curr_frame->height * curr_frame->comp); i += curr_frame->comp) {
 
 		// set_pixel should write into output + offset, returning how many chars it wrote
 		int written = set_pixel(output + offset, i, curr_frame, characters, color);
 		offset += written;
 		
 		x += 2; // assuming 2 chars per pixel
-		if (x == curr_frame->width * 2) {
+		if (x == curr_frame->width*2) {
 			if (offset < output_size - 1) {
 				output[offset++] = '\n'; // add newline safely
 			}
@@ -151,8 +148,10 @@ void draw_frame(Frame *prev_frame, Frame *curr_frame, int characters,
          curr_frame->pixel_data[i + 1] != prev_frame->pixel_data[i + 1] ||
          curr_frame->pixel_data[i + 2] != prev_frame->pixel_data[i + 2])) {
 
-      char str[50];		 
+      char str[50];
+			memset(str,'\0',sizeof(char)*50);
       set_pixel(str, i, curr_frame, characters, color);
+			
 #if RENDER
 			setCharAt(x + offsetX, y + offsetY, str);
 #endif
@@ -230,7 +229,7 @@ int render_media(Settings *settings) {
   double scaler = get_scale_factor(settings->width, settings->height,
                                  settings->max_width, settings->max_height);
 #else
-  double scaler = 1;
+	double scaler = 1;
 #endif
 	
   int H = settings->height * scaler;
@@ -345,6 +344,9 @@ int render_media(Settings *settings) {
 				render_option = 1;
         print_frame_as_string(curr_frame, settings->character_mode,
                               settings->color);
+        /* draw_frame(prev_frame, curr_frame, settings->character_mode, */
+        /*            settings->color); */
+
 			} else {
 				render_option = 2;
         draw_frame(prev_frame, curr_frame, settings->character_mode,
