@@ -9,6 +9,7 @@
 #include <time.h>
 
 #define RENDER 1 // at 0 we will not render (for debug reasons)
+#define AUTOSCALE 1
 
 #define THREADS 8
 
@@ -95,39 +96,43 @@ int set_pixel(char *str, int i, Frame *frame, int characters, int color) {
 
 void print_frame_as_string(Frame *curr_frame, int characters,
                            int color) {
+	
   if (characters == 3)
-	color = 1;
+		color = 1;
 
   size_t output_size = 50 * curr_frame->width * curr_frame->height;
   char *output = malloc(output_size);
   if (!output) {
-	perror("malloc");
-	return;
+		perror("malloc");
+		return;
   }
 
   size_t offset = 0;
   int x = 0;
-
+	
   for (int i = 0; i < curr_frame->width * curr_frame->height * curr_frame->comp; i += curr_frame->comp) {
-	// set_pixel should write into output + offset, returning how many chars it wrote
-	int written = set_pixel(output + offset, i, curr_frame, characters, color);
-	offset += written;
 
-	x += 2; // assuming 2 chars per pixel
-	if (x == curr_frame->width * 2) {
-	  if (offset < output_size - 1) {
-		output[offset++] = '\n'; // add newline safely
-	  }
-	  x = 0;
-	}
+		// set_pixel should write into output + offset, returning how many chars it wrote
+		int written = set_pixel(output + offset, i, curr_frame, characters, color);
+		offset += written;
+		
+		x += 2; // assuming 2 chars per pixel
+		if (x == curr_frame->width * 2) {
+			if (offset < output_size - 1) {
+				output[offset++] = '\n'; // add newline safely
+			}
+			x = 0;
+		}
 
-	if (offset >= output_size - 1) {
-	  break; // prevent overflow
-	}
+		if (offset >= output_size - 1) {
+			break; // pre overflow
+		}
   }
 
   output[offset] = '\0'; // null-terminate
-  printf("%s", output);
+#if RENDER
+	printf("%s", output);
+#endif
   free(output);
 }
 
@@ -266,7 +271,9 @@ void draw_frame(Frame *prev_frame, Frame *curr_frame, int characters,
 
       char str[50];		 
       set_pixel(str, i, curr_frame, characters, color);
-      setCharAt(x + offsetX, y + offsetY, str);
+#if RENDER
+			setCharAt(x + offsetX, y + offsetY, str);
+#endif
     }
     x += 2; // we add 2 becuase we print 2 chars
     if (x == curr_frame->width * 2) {
@@ -337,8 +344,13 @@ int render_media(Settings *settings) {
   char str[200];
   int comp = 3;
 
+#if AUTOSCALE
   double scaler = get_scale_factor(settings->width, settings->height,
 																	 settings->max_width, settings->max_height);
+#else
+  double scaler = 1;
+#endif
+	
   int H = settings->height * scaler;
   int W = settings->width * scaler;
 
@@ -496,12 +508,13 @@ int render_media(Settings *settings) {
       double delay_for_fps = (1 / settings->fps) * 1000;
 
       setCursorPosition(0, H + 1);
-      if(1){
-        printf("Time: %d; FPS: %lf; Delay: %lf %lf; changes %d limit %d; "
-			   "COMP %d; Q to quit, SPACE to pause",
+      if(settings->debug){
+        printf(WHITE "Time: %d; FPS: %lf; Delay: %lf %lf; changes %d limit %d; "
+			   "COMP %d; RENDER %d; Q to quit, SPACE to pause",
 			   frame, settings->fps, delay_for_fps - time_taken, time_taken,
-				 curr_frame->width, curr_frame->height * 2 / 3,
-			   curr_frame->comp);
+			   chan / curr_frame->width, curr_frame->height * 2 / 3,
+							 curr_frame->comp,render_option);
+
       }
 	  setCursorPosition(0, 0);
 
