@@ -8,8 +8,8 @@
 #include <string.h>
 #include <time.h>
 
-#define RENDER 0
-#define AUTOSCALE 0
+#define RENDER 1
+#define AUTOSCALE 1
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
