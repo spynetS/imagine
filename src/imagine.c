@@ -329,7 +329,7 @@ void *play_sound(void *vargp) {
 }
 
 int render_media(Settings *settings) {
-#if 1
+#if 0
   if(system("clear") == -1){
 	perror("system");
   }
@@ -338,8 +338,7 @@ int render_media(Settings *settings) {
   int comp = 3;
 
   double scaler = get_scale_factor(settings->width, settings->height,
-                                   settings->max_width, settings->max_height);
-
+																	 settings->max_width, settings->max_height);
   int H = settings->height * scaler;
   int W = settings->width * scaler;
 
@@ -347,7 +346,7 @@ int render_media(Settings *settings) {
 		   "ffmpeg -i \"%s\" -f image2pipe -vcodec rawvideo -pix_fmt rgb24 -vf "
 		   "\"scale=%d:%d\" - -hide_banner -loglevel 8",
 		   settings->path, (int)(W), (int)(H));
-
+  printf("%s\n",str);
   FILE *pipein = popen(str, "r");
   pthread_t thread_id;
   // valgrind reports memory leak but it shouldnt be
@@ -449,7 +448,6 @@ int render_media(Settings *settings) {
       //int chan = changes(prev_frame, curr_frame);
 
       // the changes are more then half the screen print the whole frame
-#if RENDER
 
     pthread_t threads[THREADS];
     DrawJob jobs[THREADS];
@@ -464,7 +462,7 @@ int render_media(Settings *settings) {
         int end_pixel   = (i == THREADS - 1) ? pixels : per_pixel * (i + 1);
 
         // Allocate buffer: 3-4 chars per pixel safe estimate
-		outputs[i] = malloc((end_pixel - start_pixel) * 32);
+		outputs[i] = malloc((end_pixel - start_pixel) * 33);
 		
         jobs[i] = (DrawJob){
             .prev_frame = prev_frame,
@@ -486,27 +484,29 @@ int render_media(Settings *settings) {
 
     // Print final frame
     for (int i = 0; i < THREADS; i++) {
-        printf("%s", outputs[i]);
-		free(outputs[i]);
+#if RENDER
+			printf("%s", outputs[i]);
+#endif					  
+	  free(outputs[i]);
     }
 	  
-#endif				
+
       t = clock() - t;
       double time_taken = ((double)t) / CLOCKS_PER_SEC * 1000; // in ms
       double delay_for_fps = (1 / settings->fps) * 1000;
 
       setCursorPosition(0, H + 1);
-      if(settings->debug){
-        /* printf(WHITE "Time: %d; FPS: %lf; Delay: %lf %lf; changes %d limit %d; " */
-		/* 	   "COMP %d; Q to quit, SPACE to pause", */
-		/* 	   frame, settings->fps, delay_for_fps - time_taken, time_taken, */
-		/* 	   chan / curr_frame->width, curr_frame->height * 2 / 3, */
-		/* 	   curr_frame->comp); */
+      if(1){
+        printf("Time: %d; FPS: %lf; Delay: %lf %lf; changes %d limit %d; "
+			   "COMP %d; Q to quit, SPACE to pause",
+			   frame, settings->fps, delay_for_fps - time_taken, time_taken,
+				 curr_frame->width, curr_frame->height * 2 / 3,
+			   curr_frame->comp);
       }
-      setCursorPosition(0, 0);
+	  setCursorPosition(0, 0);
 
       frame++;
-      msleep(delay_for_fps - time_taken);
+	  //      msleep(delay_for_fps - time_taken);
     }
   }
 
