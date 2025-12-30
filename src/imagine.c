@@ -329,7 +329,7 @@ void *play_sound(void *vargp) {
 }
 
 int render_media(Settings *settings) {
-#if 0
+#if 1
   if(system("clear") == -1){
 	perror("system");
   }
@@ -338,7 +338,7 @@ int render_media(Settings *settings) {
   int comp = 3;
 
   double scaler = get_scale_factor(settings->width, settings->height,
-																	 settings->max_width, settings->max_height);
+																	 settings->max_width, settings->max_height) * 0.99f;
   int H = settings->height * scaler;
   int W = settings->width * scaler;
 
@@ -403,7 +403,7 @@ int render_media(Settings *settings) {
 		  }
         }
         setCursorPosition(0, 1);
-		print_frame_as_string(curr_frame, settings->character_mode,
+				print_frame_as_string(curr_frame, settings->character_mode,
 							  settings->color);
 
       }
@@ -496,7 +496,7 @@ int render_media(Settings *settings) {
       double delay_for_fps = (1 / settings->fps) * 1000;
 
       setCursorPosition(0, H + 1);
-      if(1){
+      if(0){
         printf("Time: %d; FPS: %lf; Delay: %lf %lf; changes %d limit %d; "
 			   "COMP %d; Q to quit, SPACE to pause",
 			   frame, settings->fps, delay_for_fps - time_taken, time_taken,
