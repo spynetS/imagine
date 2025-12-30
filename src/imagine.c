@@ -9,6 +9,7 @@
 #include <time.h>
 
 #define RENDER 1 // at 0 we will not render (for debug reasons)
+#define AUTOSCALE 1
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -93,39 +94,43 @@ int set_pixel(char *str, int i, Frame *frame, int characters, int color) {
 
 void print_frame_as_string(Frame *curr_frame, int characters,
                            int color) {
+	
   if (characters == 3)
-	color = 1;
+		color = 1;
 
   size_t output_size = 50 * curr_frame->width * curr_frame->height;
   char *output = malloc(output_size);
   if (!output) {
-	perror("malloc");
-	return;
+		perror("malloc");
+		return;
   }
 
   size_t offset = 0;
   int x = 0;
-
+	
   for (int i = 0; i < curr_frame->width * curr_frame->height * curr_frame->comp; i += curr_frame->comp) {
-	// set_pixel should write into output + offset, returning how many chars it wrote
-	int written = set_pixel(output + offset, i, curr_frame, characters, color);
-	offset += written;
 
-	x += 2; // assuming 2 chars per pixel
-	if (x == curr_frame->width * 2) {
-	  if (offset < output_size - 1) {
-		output[offset++] = '\n'; // add newline safely
-	  }
-	  x = 0;
-	}
+		// set_pixel should write into output + offset, returning how many chars it wrote
+		int written = set_pixel(output + offset, i, curr_frame, characters, color);
+		offset += written;
+		
+		x += 2; // assuming 2 chars per pixel
+		if (x == curr_frame->width * 2) {
+			if (offset < output_size - 1) {
+				output[offset++] = '\n'; // add newline safely
+			}
+			x = 0;
+		}
 
-	if (offset >= output_size - 1) {
-	  break; // prevent overflow
-	}
+		if (offset >= output_size - 1) {
+			break; // pre overflow
+		}
   }
 
   output[offset] = '\0'; // null-terminate
-  printf("%s", output);
+#if RENDER
+	printf("%s", output);
+#endif
   free(output);
 }
 
@@ -148,7 +153,9 @@ void draw_frame(Frame *prev_frame, Frame *curr_frame, int characters,
 
       char str[50];		 
       set_pixel(str, i, curr_frame, characters, color);
-      setCharAt(x + offsetX, y + offsetY, str);
+#if RENDER
+			setCharAt(x + offsetX, y + offsetY, str);
+#endif
     }
     x += 2; // we add 2 becuase we print 2 chars
     if (x == curr_frame->width * 2) {
@@ -219,9 +226,13 @@ int render_media(Settings *settings) {
   char str[200];
   int comp = 3;
 
+#if AUTOSCALE
   double scaler = get_scale_factor(settings->width, settings->height,
-                                   settings->max_width, settings->max_height);
-
+                                 settings->max_width, settings->max_height);
+#else
+  double scaler = 1;
+#endif
+	
   int H = settings->height * scaler;
   int W = settings->width * scaler;
 
@@ -326,19 +337,20 @@ int render_media(Settings *settings) {
 
       clock_t t;
       t = clock();
-
+			int render_option = 0;
       int chan = changes(prev_frame, curr_frame);
       // the changes are more then half the screen print the whole frame
-#if RENDER
-      if (chan / curr_frame->width > curr_frame->height * 2 / 3) {
 
+      if (chan / curr_frame->width > curr_frame->height * 2 / 3) {
+				render_option = 1;
         print_frame_as_string(curr_frame, settings->character_mode,
                               settings->color);
-      } else {
+			} else {
+				render_option = 2;
         draw_frame(prev_frame, curr_frame, settings->character_mode,
                    settings->color);
-      }
-#endif				
+			}
+
       t = clock() - t;
       double time_taken = ((double)t) / CLOCKS_PER_SEC * 1000; // in ms
       double delay_for_fps = (1 / settings->fps) * 1000;
@@ -346,10 +358,10 @@ int render_media(Settings *settings) {
       setCursorPosition(0, H + 1);
       if(settings->debug){
         printf(WHITE "Time: %d; FPS: %lf; Delay: %lf %lf; changes %d limit %d; "
-			   "COMP %d; Q to quit, SPACE to pause",
+			   "COMP %d; RENDER %d; Q to quit, SPACE to pause",
 			   frame, settings->fps, delay_for_fps - time_taken, time_taken,
 			   chan / curr_frame->width, curr_frame->height * 2 / 3,
-			   curr_frame->comp);
+							 curr_frame->comp,render_option);
       }
       setCursorPosition(0, 0);
 
