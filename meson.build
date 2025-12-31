@@ -25,6 +25,7 @@ sources = [
   'src/imagine.c',
   'src/viewer.c',
   'src/main.c',
+  'src/logger.c',
 ]
 
 exe = executable(

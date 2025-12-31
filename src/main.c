@@ -3,12 +3,14 @@
 #include "flagser.h"
 #include "imagine.h"
 #include "viewer.h"
+#include "logger.h"
 #include "string.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+
 
 // main struct to hold the state of the program
 Settings settings;
@@ -58,7 +60,7 @@ void setDebug(int av,char**ac){
 
 
 int main(int argc, char **argv) {
-
+	
   settings.character_mode = 3;
   settings.color = 1;
   settings.hide_cursor = 1;
@@ -109,12 +111,16 @@ int main(int argc, char **argv) {
   if(settings.width == 0 || settings.height == 0){
     set_res(&settings);
   }
-  
+
+
+	
   if(set_fps(&settings) == 0 && !settings.viewer){
     puts("no input file provided, -h for help");
     exit(1);
   }
 
+
+	
   if(settings.viewer)
     start_viewing(&settings);
   else

@@ -1,5 +1,6 @@
 // Alfred Roos 2023
 #include "imagine.h"
+#include "logger.h"
 #include "../lib/printer/src/printer.h"
 #include <dirent.h>
 #include <pthread.h>
@@ -218,6 +219,10 @@ void *play_sound(void *vargp) {
 }
 
 int render_media(Settings *settings) {
+
+	Logger logger = {0};
+	init_logger(&logger, "./log.txt");
+	
 #if 0
   if(system("clear") == -1){
 	perror("system");
@@ -357,11 +362,16 @@ int render_media(Settings *settings) {
 
       setCursorPosition(0, H + 1);
       if(settings->debug){
-        printf(WHITE "Time: %d; FPS: %lf; Delay: %lf %lf; changes %d limit %d; "
+				char str[256];
+				
+        sprintf(str,WHITE "Time: %d; FPS: %lf; Delay: %lf %lf; changes %d limit %d; "
 			   "COMP %d; RENDER %d; Q to quit, SPACE to pause",
 			   frame, settings->fps, delay_for_fps - time_taken, time_taken,
 			   chan / curr_frame->width, curr_frame->height * 2 / 3,
 							 curr_frame->comp,render_option);
+				log_message(&logger, str);
+				
+				
       }
       setCursorPosition(0, 0);
 
